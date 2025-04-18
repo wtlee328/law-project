@@ -271,23 +271,28 @@
         #aiKeywordsContainer {
             margin-top: 15px;
             padding: 15px;
-            background-color: #e9ecef; /* Light gray background */
+            background-color: #e9ecef;
+            /* Light gray background */
             border: 1px solid #ced4da;
             border-radius: 4px;
-            display: none; /* Initially hidden */
+            display: none;
+            /* Initially hidden */
         }
+
         #aiKeywordsContainer p {
             font-size: 0.9rem;
             font-weight: 600;
             color: var(--primary-color);
             margin-bottom: 10px;
         }
+
         .keyword-list {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 15px;
         }
+
         .keyword-tag {
             display: inline-flex;
             align-items: center;
@@ -297,6 +302,7 @@
             border-radius: 15px;
             font-size: 0.85rem;
         }
+
         .keyword-delete {
             margin-left: 8px;
             color: #f8f9fa;
@@ -307,26 +313,33 @@
             padding: 0 2px;
             line-height: 1;
         }
+
         .keyword-delete:hover {
             color: var(--accent-color);
         }
+
         .add-keyword-section {
             display: flex;
             gap: 10px;
             align-items: center;
             margin-top: 10px;
         }
+
         .add-keyword-section input[type="text"] {
             flex-grow: 1;
-            padding: 8px 10px; /* Smaller padding */
-            font-size: 0.9rem; /* Smaller font size */
+            padding: 8px 10px;
+            /* Smaller padding */
+            font-size: 0.9rem;
+            /* Smaller font size */
             min-width: 150px;
         }
+
         .add-keyword-section button {
             padding: 8px 15px;
             font-size: 0.9rem;
             white-space: nowrap;
         }
+
         /* --- End AI Keyword Styles --- */
 
         .buttons-container {
@@ -831,16 +844,19 @@
                 width: auto;
                 display: inline-block;
             }
+
             .add-keyword-section {
                 flex-direction: column;
                 align-items: stretch;
             }
+
             .add-keyword-section input[type="text"] {
                 width: 100%;
             }
-             .add-keyword-section button {
+
+            .add-keyword-section button {
                 width: 100%;
-             }
+            }
         }
 
         /* Style for the custom case type input */
@@ -1055,7 +1071,8 @@
                             </div>
                             <div class="add-keyword-section">
                                 <input type="text" id="addKeywordInput" placeholder="新增關鍵字...">
-                                <button type="button" id="addKeywordBtn" class="btn btn-secondary"><i class="fas fa-plus"></i> 新增</button>
+                                <button type="button" id="addKeywordBtn" class="btn btn-secondary"><i
+                                        class="fas fa-plus"></i> 新增</button>
                             </div>
                         </div>
                         <!-- === END Keyword Container === -->
@@ -1326,7 +1343,7 @@
                     // Check for duplicates
                     const existingKeywords = getCurrentKeywords();
                     if (!existingKeywords.includes(newKeyword)) {
-                         const tag = document.createElement('span');
+                        const tag = document.createElement('span');
                         tag.className = 'keyword-tag';
                         tag.textContent = newKeyword;
                         tag.dataset.keyword = newKeyword;
@@ -1345,38 +1362,38 @@
                         showNotification(`關鍵字 "${newKeyword}" 已存在`, 'warning');
                     }
                 }
-                 addKeywordInput.focus();
+                addKeywordInput.focus();
             }
 
-             function deleteKeywordHandler(event) {
+            function deleteKeywordHandler(event) {
                 const tag = event.target.closest('.keyword-tag');
-                if(tag) {
+                if (tag) {
                     const keyword = tag.dataset.keyword;
                     tag.remove();
                     log(`移除關鍵字: ${keyword}`, 'ui');
                 }
             }
 
-             function getCurrentKeywords() {
-                 if (!keywordListDiv) return [];
-                 const tags = keywordListDiv.querySelectorAll('.keyword-tag');
-                 return Array.from(tags).map(tag => tag.dataset.keyword);
+            function getCurrentKeywords() {
+                if (!keywordListDiv) return [];
+                const tags = keywordListDiv.querySelectorAll('.keyword-tag');
+                return Array.from(tags).map(tag => tag.dataset.keyword);
             }
 
-             function resetAiSearchUI() {
-                 const aiButton = document.getElementById('aiSearchBtn');
-                 if (aiButton) {
-                     aiButton.innerHTML = '<i class="fas fa-search"></i> AI 搜尋';
-                     aiButton.disabled = false;
-                 }
-                 if (aiKeywordsContainer) {
-                     aiKeywordsContainer.style.display = 'none';
-                 }
-                 if(keywordListDiv) keywordListDiv.innerHTML = '';
-                 if(addKeywordInput) addKeywordInput.value = '';
-                 aiSearchState = 'initial';
-                 log('AI 搜尋 UI 已重設', 'ui');
-             }
+            function resetAiSearchUI() {
+                const aiButton = document.getElementById('aiSearchBtn');
+                if (aiButton) {
+                    aiButton.innerHTML = '<i class="fas fa-search"></i> AI 搜尋';
+                    aiButton.disabled = false;
+                }
+                if (aiKeywordsContainer) {
+                    aiKeywordsContainer.style.display = 'none';
+                }
+                if (keywordListDiv) keywordListDiv.innerHTML = '';
+                if (addKeywordInput) addKeywordInput.value = '';
+                aiSearchState = 'initial';
+                log('AI 搜尋 UI 已重設', 'ui');
+            }
 
             // --- AI Search Function (Modified for two steps) ---
             async function triggerAiSearch() {
@@ -1388,7 +1405,7 @@
                 if (aiSearchState === 'initial') {
                     log('AI 搜尋 - 步驟 1: 生成關鍵字', 'ui');
                     const caseTitleText = caseTitleInput?.value.trim();
-                    const lawsValue = lawsTextarea?.value.trim();
+                    const lawsValue = lawsTextarea?.value.trim(); // Get Applicable Laws text
 
                     if (!caseTitleText) {
                         showNotification('請先填寫「案件案由」以產生搜尋關鍵字', 'warning');
@@ -1399,7 +1416,7 @@
 
                     // Extract Keywords
                     let keywords = [];
-                    // From Title: split by common separators, trim, filter empty, unique
+                    // From Title: split by common separators, trim, filter empty
                     if (caseTitleText) {
                          keywords = keywords.concat(
                              caseTitleText.split(/[\s,、，；;]+/)
@@ -1407,14 +1424,23 @@
                                           .filter(kw => kw.length > 0)
                          );
                     }
-                    // From Laws: each non-empty line is a keyword
+
+                    // *** MODIFIED PART START ***
+                    // From Laws: Extract specific law patterns (e.g., 民法第xx條)
                     if (lawsValue) {
-                         keywords = keywords.concat(
-                             lawsValue.split('\n')
-                                      .map(line => line.replace(/^[-•*●]\s*/,'').trim()) // Remove list markers
-                                      .filter(line => line.length > 0)
-                         );
+                        // Regex to capture patterns like "民法 第 123 條", "OOXX法第45條" etc.
+                        // It captures: Chinese characters + "法" + "第" + optional space + digits + optional space + "條"
+                        const lawPattern = /^[\s•●-]*([\u4e00-\u9fa5]+法\s?第\s?\d+\s?條)/;
+                        lawsValue.split('\n').forEach(line => {
+                            const match = line.trim().match(lawPattern);
+                            if (match && match[1]) { // If pattern matches, add the captured group (e.g., "民法第123條")
+                                keywords.push(match[1].replace(/\s/g, '')); // Add matched law article, remove internal spaces
+                            }
+                        });
+                        log(`從適用法條提取到符合格式的關鍵字 ${keywords.length - (caseTitleText ? caseTitleText.split(/[\s,、，；;]+/).map(kw => kw.trim()).filter(kw => kw.length > 0).length : 0)} 個`, 'debug');
                     }
+                    // *** MODIFIED PART END ***
+
 
                     // Unique keywords
                     keywords = [...new Set(keywords)];
@@ -1555,7 +1581,7 @@
 
             // Create and add AI Search Button on load
             if (aiSearchButtonContainer) {
-                 // Pass the modified triggerAiSearch function
+                // Pass the modified triggerAiSearch function
                 const aiSearchButton = createButton('aiSearchBtn', 'AI 搜尋', 'search', 'btn-accent', triggerAiSearch, false, false);
                 aiSearchButtonContainer.appendChild(aiSearchButton);
                 log('AI 搜尋按鈕已添加', 'init');
@@ -1563,11 +1589,11 @@
                 log('未找到 AI 搜尋按鈕容器 (aiSearchButtonContainer)', 'warning');
             }
 
-             // Add Event Listener for Add Keyword Button
+            // Add Event Listener for Add Keyword Button
             if (addKeywordBtn) {
                 addKeywordBtn.addEventListener('click', addKeywordHandler);
             }
-             // Add Event Listener for Enter key in Add Keyword Input
+            // Add Event Listener for Enter key in Add Keyword Input
             if (addKeywordInput) {
                 addKeywordInput.addEventListener('keypress', function (e) {
                     if (e.key === 'Enter') {
@@ -1589,13 +1615,13 @@
                 updateAiButtonState(); // Initial check
             } else { log('未找到案件經過欄位 (caseProcess textarea)', 'warning'); }
 
-             // Reset AI Search if title or laws change
-             if (caseTitleInput) {
-                 caseTitleInput.addEventListener('input', resetAiSearchUI);
-             }
-             if (lawsTextarea) {
-                 lawsTextarea.addEventListener('input', resetAiSearchUI);
-             }
+            // Reset AI Search if title or laws change
+            if (caseTitleInput) {
+                caseTitleInput.addEventListener('input', resetAiSearchUI);
+            }
+            if (lawsTextarea) {
+                lawsTextarea.addEventListener('input', resetAiSearchUI);
+            }
 
             // Debug Panel Toggle
             document.addEventListener('keydown', (e) => { if (e.altKey && e.key === 'd') { debugPanel.classList.toggle('active'); log(`調試面板 ${debugPanel.classList.contains('active') ? '開啟' : '關閉'}`, 'ui'); e.preventDefault(); } });
