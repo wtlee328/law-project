@@ -19,7 +19,7 @@
         window.debugInfo = {
             logRequests: true,
             logResponses: true,
-            version: "wtlee328-debug-2025-04-18-casetype-update-ai-search-stylefix", // Updated version/date
+            version: "wtlee328-debug-2025-04-18-url-fix", // Updated version/date
             user: "wtlee328",
             timestamp: new Date().toISOString() // Use current time
         };
@@ -1069,11 +1069,11 @@
             const aiSearchButtonContainer = document.getElementById('aiSearchButtonContainer');
 
             // --- Configuration ---
-            const generateWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-document';
-            const aiOrganizerWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer';
-            // === AI Search Webhook URL (REPLACE THIS) ===
-            const aiSearchWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-search'; // <<< ！！！請務必替換成您 n8n AI 搜尋的 Webhook URL！！！
-            // === END ===
+            const generateWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-document'; // URL for generating document
+            // --- !!! IMPORTANT: REPLACE THESE URLs with YOUR ACTUAL n8n Webhook URLs !!! ---
+            const aiOrganizerWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer'; // URL for AI Summarize/Organize
+            const aiSearchWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-search'; // URL for AI Search (Fixed typo)
+            // --- !!! END IMPORTANT !!! ---
             const LOCAL_STORAGE_KEY = 'wtlee328_lastLegalDocument';
             const DEBUG_MODE = true;
 
@@ -1147,11 +1147,25 @@
                 const caseTypeVal = getCaseTypeValue(); if (!caseTypeVal) { showNotification('請選擇或輸入「書狀類型」', 'warning'); if (caseTypeSelect.value === 'custom') { showError('caseTypeCustom', '請輸入自訂書狀類型'); caseTypeCustomInput?.focus(); } else { showError('caseType', '請選擇書狀類型'); caseTypeSelect?.focus(); } return; }
                 const caseTitleText = caseTitleInput ? caseTitleInput.value.trim() : ''; if (!caseTitleText) { showNotification('請填寫「案件案由」欄位', 'warning'); showError('caseTitle', 'AI 統整需要案件案由'); caseTitleInput?.focus(); return; }
                 const processText = caseProcessTextarea.value.trim(); if (!processText) { showNotification('請先在「案件詳細經過」欄位填寫內容', 'warning'); caseProcessTextarea.focus(); return; }
-                clearErrors(); if (!aiOrganizerWebhookUrl || aiOrganizerWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer') { showNotification('AI 統整功能未設定或設定錯誤', 'error'); log('AI 統整失敗：Webhook URL 未設定或無效', 'error'); showError('caseProcess', 'AI 功能設定錯誤'); return; }
+                clearErrors();
+
+                // --- URL Check for AI Summarize ---
+                // Checks if the URL is empty OR still the default ngrok URL
+                if (!aiOrganizerWebhookUrl || aiOrganizerWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer') {
+                    showNotification('AI 統整功能未設定或設定錯誤', 'error');
+                    log('AI 統整失敗：Webhook URL 未設定或仍為預設值', 'error');
+                    // Log the actual value being checked for easier debugging
+                    log(`Current aiOrganizerWebhookUrl value: ${aiOrganizerWebhookUrl}`, 'debug');
+                    showError('caseProcess', 'AI 功能設定錯誤 (請檢查URL)');
+                    return; // Stop execution
+                 }
+                 // --- End URL Check ---
+
                 const aiButton = document.getElementById('aiSummarizeBtn'); let originalButtonHTML = ''; if (aiButton) { originalButtonHTML = aiButton.innerHTML; aiButton.disabled = true; aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 統整中...'; }
                 log('觸發 AI 統整，發送 類型+案由+經過 到 n8n...', 'request'); showNotification('正在請求 AI 統整，請稍候...', 'info');
                 try {
                     const payload = { caseType: caseTypeVal, caseTitle: caseTitleText, caseProcess: processText }; log('發送到 AI Webhook 的 Payload:', 'debug'); if (DEBUG_MODE) console.log("AI Payload:", JSON.stringify(payload, null, 2));
+                    // Use the correct variable name here
                     const response = await fetch(aiOrganizerWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': window.debugInfo.user || 'unknown', 'X-Action': 'analyze-case-details' }, body: JSON.stringify(payload) }); log(`AI 統整回應狀態: ${response.status}`, 'response');
                     if (!response.ok) { let errorBody = await response.text(); log(`AI 伺服器錯誤回應內容: ${errorBody}`, 'error'); let errorMessage = `AI 統整伺服器錯誤: ${response.status} ${response.statusText}.`; try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; } catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; } throw new Error(errorMessage); }
                     const result = await response.json(); log('收到 AI 統整結果', 'response'); if (DEBUG_MODE) console.log('AI Result (Raw):', JSON.stringify(result, null, 2));
@@ -1169,11 +1183,25 @@
                 clearErrors();
                 const caseTitleText = document.getElementById('caseTitle')?.value.trim(); const factsText = document.getElementById('facts')?.value.trim(); const precedentsTextarea = document.getElementById('precedents');
                 if (!caseTitleText) { showNotification('請先填寫「案件案由」以利 AI 搜尋相關判決', 'warning'); showError('caseTitle', 'AI 搜尋需要案件案由'); document.getElementById('caseTitle')?.focus(); return; }
-                if (!aiSearchWebhookUrl || aiSearchWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-search') { showNotification('AI 搜尋功能未設定或設定錯誤 (Webhook URL)', 'error'); log('AI 搜尋失敗：Webhook URL 未設定或無效', 'error'); return; }
+
+                // --- URL Check for AI Search ---
+                // Checks if the URL is empty OR still the default ngrok URL (after fixing typo)
+                if (!aiSearchWebhookUrl || aiSearchWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-search') {
+                    showNotification('AI 搜尋功能未設定或設定錯誤 (Webhook URL)', 'error');
+                    log('AI 搜尋失敗：Webhook URL 未設定或仍為預設值', 'error');
+                    // Log the actual value being checked for easier debugging
+                    log(`Current aiSearchWebhookUrl value: ${aiSearchWebhookUrl}`, 'debug');
+                    // Optionally show error near the search button or precedents field
+                    // showError('precedents', 'AI 搜尋功能設定錯誤 (請檢查URL)');
+                    return; // Stop execution
+                 }
+                 // --- End URL Check ---
+
                 const aiButton = document.getElementById('aiSearchBtn'); let originalButtonHTML = ''; if (aiButton) { originalButtonHTML = aiButton.innerHTML; aiButton.disabled = true; aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜尋中...'; }
                 log('觸發 AI 判決搜尋...', 'request'); showNotification('正在請求 AI 搜尋相關判決...', 'info');
                 try {
                     const payload = { action: 'search_precedents', caseTitle: caseTitleText, factsSummary: factsText.substring(0, 800) }; log('發送到 AI Search Webhook 的 Payload:', 'debug'); if (DEBUG_MODE) console.log("AI Search Payload:", JSON.stringify(payload, null, 2));
+                    // Use the correct variable name here
                     const response = await fetch(aiSearchWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': window.debugInfo.user || 'unknown', 'X-Action': 'search-precedents' }, body: JSON.stringify(payload) }); log(`AI 搜尋回應狀態: ${response.status}`, 'response');
                     if (!response.ok) { let errorBody = await response.text(); log(`AI 搜尋伺服器錯誤回應內容: ${errorBody}`, 'error'); let errorMessage = `AI 搜尋伺服器錯誤: ${response.status} ${response.statusText}.`; try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; } catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; } throw new Error(errorMessage); }
                     const result = await response.json(); log('收到 AI 搜尋結果', 'response'); if (DEBUG_MODE) console.log('AI Search Result (Raw):', JSON.stringify(result, null, 2));
@@ -1210,23 +1238,14 @@
             log(`系統初始化 - v${window.debugInfo.version}`, 'init');
             setupButtons(); // Setup main form buttons
 
-            // === Create and add AI Search Button on load (STYLE FIXED) ===
+            // Create and add AI Search Button on load
             if (aiSearchButtonContainer) {
-                const aiSearchButton = createButton(
-                    'aiSearchBtn',            // id
-                    'AI 搜尋',               // text
-                    'search',                 // icon
-                    'btn-accent',             // *** CHANGED: styleClass to match AI Summarize (gold) ***
-                    triggerAiSearch,          // clickHandler
-                    false,                    // isSubmit
-                    false                     // isUniform (false = match AI Summarize size)
-                );
+                const aiSearchButton = createButton('aiSearchBtn', 'AI 搜尋', 'search', 'btn-accent', triggerAiSearch, false, false);
                 aiSearchButtonContainer.appendChild(aiSearchButton);
-                log('AI 搜尋按鈕已添加 (樣式已修正)', 'init');
+                log('AI 搜尋按鈕已添加', 'init');
             } else {
                 log('未找到 AI 搜尋按鈕容器 (aiSearchButtonContainer)', 'warning');
             }
-            // === END ===
 
             // Add Event Listener for Case Type Change
             if (caseTypeSelect) {
