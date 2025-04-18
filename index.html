@@ -18,13 +18,13 @@
         window.debugInfo = {
             logRequests: true,
             logResponses: true,
-            version: "wtlee328-debug-2025-04-11", // Updated version/date
+            version: "wtlee328-debug-2025-04-18", // Updated version/date
             user: "wtlee328",
             timestamp: new Date().toISOString() // Use current time
         };
     </script>
     <style>
-        /* --- Base Styles (unchanged) --- */
+        /* --- Base Styles (unchanged but included for completeness) --- */
         :root {
             --primary-color: #1a3b68;
             --secondary-color: #f8f9fa;
@@ -183,69 +183,36 @@
             cursor: not-allowed;
         }
 
-        /* Primary Button (Generate) */
-        #submitBtn {
-             background-color: var(--primary-color);
-             color: white;
-        }
-        #submitBtn:hover:not(:disabled) {
-            background-color: #0f2a53; /* Darker primary */
-        }
+        /* Specific Button Styles */
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: #0f2a53; }
 
-        /* Secondary Button (Default Gray) */
-        .secondary-btn {
-            background-color: #6c757d;
-            color: white;
-        }
-        .secondary-btn:hover:not(:disabled) {
-            background-color: #5a6268;
-        }
+        .secondary-btn, .btn-secondary { background-color: #6c757d; color: white; }
+        .secondary-btn:hover:not(:disabled), .btn-secondary:hover:not(:disabled) { background-color: #5a6268; }
 
-        /* Success Button (Test) */
-        #testBtn {
-            background-color: var(--success-color);
-            color: white;
-        }
-        #testBtn:hover:not(:disabled) {
-            background-color: #218838;
-        }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-success:hover:not(:disabled) { background-color: #218838; }
 
-        /* Danger Button (Reset) */
-        #resetBtn {
-            background-color: var(--error-color);
-             color: white;
-        }
-         #resetBtn:hover:not(:disabled) {
-            background-color: #c82333;
-        }
+        .btn-danger { background-color: var(--error-color); color: white; }
+        .btn-danger:hover:not(:disabled) { background-color: #c82333; }
 
-        /* Info Button (Restore) */
-        #restoreBtn {
-            background-color: var(--info-color);
-             color: white;
-        }
-        #restoreBtn:hover:not(:disabled) {
-             background-color: #138496;
-        }
+        .btn-info { background-color: var(--info-color); color: white; }
+        .btn-info:hover:not(:disabled) { background-color: #138496; }
 
-        /* Accent Button (AI Summarize) */
+        .btn-accent { background-color: var(--accent-color); color: var(--primary-color); }
+        .btn-accent:hover:not(:disabled) { background-color: #c89a50; }
+        .btn-accent:disabled { background-color: #e0c8a0; color: #a0a0a0; }
+
+        /* AI Button Specific Size */
         #aiSummarizeBtn {
-            background-color: var(--accent-color);
-            color: var(--primary-color); /* Darker text for contrast */
-            padding: 8px 15px; /* Smaller padding for this specific button */
+            padding: 8px 15px;
             font-size: 0.9rem;
-        }
-        #aiSummarizeBtn:hover:not(:disabled) {
-             background-color: #c89a50; /* Darker gold */
-        }
-         #aiSummarizeBtn:disabled {
-            background-color: #e0c8a0; /* Lighter disabled gold */
-            color: #a0a0a0;
         }
         #aiSummarizeButtonContainer {
             margin-top: 10px;
             text-align: right;
         }
+
 
         /* Button Container Layout */
         .buttons-container {
@@ -976,14 +943,13 @@
             // --- Configuration ---
             // N8N Webhook URLs
             const generateWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-document';
-            // !! IMPORTANT: Replace with your actual AI summarization webhook URL !!
-            const aiWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer';
+            // !! IMPORTANT: Use the CORRECT PRODUCTION URL for AI !!
+            const aiWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer'; // Assuming this is the PRODUCTION URL now
             const LOCAL_STORAGE_KEY = 'wtlee328_lastLegalDocument';
             const DEBUG_MODE = true; // Set to false to disable console logs for non-errors
 
              // --- Logging Utility ---
             function log(message, type = 'info') {
-                // Basic console logging
                  const timestamp = new Date().toLocaleTimeString();
                  const logPrefix = `[${type.toUpperCase()}][${timestamp}]`;
                  if (DEBUG_MODE || type === 'error' || type === 'warning') {
@@ -991,15 +957,11 @@
                      else if (type === 'warning') console.warn(logPrefix, message);
                      else console.log(logPrefix, message);
                  }
-
-                // Update Debug Panel
                 if (debugPanel) {
                     const logEntry = document.createElement('div');
                     logEntry.className = `log-entry ${type}`;
-                    // Sanitize message slightly for HTML display
-                    logEntry.textContent = `[${timestamp}] ${message.toString().substring(0, 300)}`; // Limit length
+                    logEntry.textContent = `[${timestamp}] ${message.toString().substring(0, 300)}`;
                     debugPanel.appendChild(logEntry);
-                    // Auto-scroll and limit entries
                     while (debugPanel.childNodes.length > 100) {
                         debugPanel.removeChild(debugPanel.firstChild);
                     }
@@ -1010,19 +972,14 @@
             // --- UI Feedback Functions ---
             function showNotification(message, type = 'info', duration = 5000) {
                  if (!notification) return;
-                 notification.textContent = ''; // Clear previous
-                 notification.className = `notification ${type}`; // Base classes
-
+                 notification.textContent = '';
+                 notification.className = `notification ${type}`;
                  const icon = document.createElement('i');
                  const iconMap = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
                  icon.className = `fas ${iconMap[type] || 'fa-info-circle'}`;
-
                  notification.appendChild(icon);
-                 notification.appendChild(document.createTextNode(` ${message}`)); // Add space
-
+                 notification.appendChild(document.createTextNode(` ${message}`));
                  notification.classList.add('show');
-
-                 // Auto-hide after duration
                  setTimeout(() => {
                      notification.classList.remove('show');
                  }, duration);
@@ -1058,7 +1015,6 @@
             }
 
             function validateEmail(email) {
-                 // Basic email regex
                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                  return emailRegex.test(email);
              }
@@ -1067,8 +1023,6 @@
                 let isValid = true;
                 clearErrors();
                 log('開始表單驗證', 'validation');
-
-                // Required fields check
                 const requiredFields = [
                     { id: 'caseType', message: '請選擇訴狀類型' },
                     { id: 'courtName', message: '請選擇法院名稱' },
@@ -1080,7 +1034,6 @@
                     { id: 'evidence', message: '請填寫證據名稱及件數' },
                     { id: 'email', message: '請填寫有效的電子郵件' }
                 ];
-
                 requiredFields.forEach(field => {
                     const element = document.getElementById(field.id);
                     if (!element || !element.value.trim()) {
@@ -1089,29 +1042,24 @@
                         isValid = false;
                     }
                 });
-
-                // Specific field validations
                 const factsValue = document.getElementById('facts').value.trim();
                 if (factsValue && factsValue.split('\n').filter(line => line.trim()).length < 3) {
                     showError('facts', '事實及理由請至少填寫3點');
                      log(`驗證失敗: facts - 未滿3點`, 'validation');
                     isValid = false;
                 }
-
                 const emailValue = document.getElementById('email').value.trim();
                 if (emailValue && !validateEmail(emailValue)) {
                     showError('email', '請填寫有效的電子郵件格式');
                     log(`驗證失敗: email - 格式錯誤`, 'validation');
                     isValid = false;
                 }
-
                 log(`表單驗證結果: ${isValid ? '通過' : '失敗'}`, 'validation');
                  if (!isValid) {
-                     // Scroll to the first error field for better UX
                      const firstError = form.querySelector('.error');
                      if (firstError) {
                          firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                         firstError.focus({ preventScroll: true }); // Focus without double scroll
+                         firstError.focus({ preventScroll: true });
                      }
                  }
                 return isValid;
@@ -1119,61 +1067,63 @@
 
             // --- Data Handling & Processing ---
              function extractActionInput(responseData) {
-                 // This function remains the same as provided before, attempts to find "action_input"
                  try {
-                     // ... (previous implementation for extracting action_input) ...
-                     // Simplified version for brevity - assumes structure if present
                      if (typeof responseData === 'string') {
-                         try { responseData = JSON.parse(responseData); } catch (e) { return responseData; }
+                         try { responseData = JSON.parse(responseData); } catch (e) { /* Not JSON, proceed as string */ }
                      }
                      if (typeof responseData === 'object' && responseData !== null) {
+                         // Prioritize specific structure if available
                          if (responseData.action === "Final Answer" && responseData.action_input) {
+                             log("提取自 action_input", "process");
                              return responseData.action_input;
                          }
+                         // Check standard 'output' key
                          if (responseData.output) {
-                             // Check if output itself contains the structure
-                             if (typeof responseData.output === 'string') {
-                                 try {
-                                     const nestedOutput = JSON.parse(responseData.output);
-                                     if (nestedOutput.action === "Final Answer" && nestedOutput.action_input) {
-                                         return nestedOutput.action_input;
-                                     }
-                                 } catch (e) { /* Ignore nested parse error */ }
-                             } else if (typeof responseData.output === 'object' && responseData.output !== null) {
-                                 if (responseData.output.action === "Final Answer" && responseData.output.action_input) {
-                                    return responseData.output.action_input;
-                                 }
-                             }
-                             return responseData.output; // Return output if no action_input found within it
+                             log("提取自 output 屬性", "process");
+                             return responseData.output;
                          }
+                          // Check standard 'text' key (often used by LLMs)
+                          if (responseData.text) {
+                              log("提取自 text 屬性", "process");
+                              return responseData.text;
+                          }
                      }
-                     return responseData; // Fallback
+                      // If it's a string after potential parsing, or fallback
+                      if(typeof responseData === 'string') {
+                         log("作為原始字串處理", "process");
+                         return responseData;
+                      }
+                      // If it's an object with no known output key, stringify it
+                      log("未找到已知輸出鍵，將物件字串化", "process");
+                      return JSON.stringify(responseData, null, 2);
+
                  } catch (e) {
-                     log(`提取 action_input 時出錯: ${e.message}`, 'error');
+                     log(`提取 action_input/output/text 時出錯: ${e.message}`, 'error');
                      return responseData; // Return original on error
                  }
              }
 
-            function processLegalDocumentText(text) {
-                // This function remains the same, processes extracted text for display
-                 if (!text) return '';
-                 let processedText = extractActionInput(text);
-                 log(`提取後文本類型: ${typeof processedText}`, 'debug');
+            function processLegalDocumentText(data) {
+                 if (!data) return '';
+                 let processedText = extractActionInput(data); // Use the updated extractor
+                 log(`處理前文本類型: ${typeof processedText}`, 'debug');
 
                  if (typeof processedText === 'string') {
-                     // Replace escaped characters common in JSON strings
                      processedText = processedText
-                         .replace(/\\n/g, '\n')    // Newlines
-                         .replace(/\\"/g, '"')     // Double quotes
-                         .replace(/\\t/g, '\t')     // Tabs
-                         .replace(/\\\\/g, '\\');   // Backslashes
-                 } else if (processedText && typeof processedText === 'object') {
-                     // If it's still an object, stringify nicely for display
-                     processedText = JSON.stringify(processedText, null, 2);
+                         .replace(/\\n/g, '\n')
+                         .replace(/\\"/g, '"')
+                         .replace(/\\t/g, '\t')
+                         .replace(/\\\\/g, '\\');
+                     // Remove potential markdown code blocks if AI wraps output
+                     processedText = processedText.replace(/^```(json|text|markdown)?\s*/gm, '').replace(/```\s*$/gm, '');
+                     log("字串處理完成", 'debug');
+                 } else {
+                      log("輸入非字串，無法進行字串處理", 'debug');
                  }
-                 // Ensure it always returns a string
-                 return String(processedText || '');
+
+                 return String(processedText || '').trim(); // Ensure return is trimmed string
             }
+
 
             // --- Local Storage ---
             function saveDocumentToLocalStorage(documentText) {
@@ -1195,16 +1145,15 @@
                      const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
                      if (savedData) {
                          const parsedData = JSON.parse(savedData);
-                         // Basic validation
                          if (parsedData && parsedData.content && parsedData.timestamp) {
                              return parsedData;
                          }
                      }
                  } catch (e) {
                      log(`無法從本地存儲讀取或解析: ${e.message}`, 'error');
-                     localStorage.removeItem(LOCAL_STORAGE_KEY); // Clear corrupted data
+                     localStorage.removeItem(LOCAL_STORAGE_KEY);
                  }
-                 return null; // Return null if no valid data found
+                 return null;
             }
 
 
@@ -1213,7 +1162,8 @@
                 const button = document.createElement('button');
                 button.id = id;
                 button.type = isSubmit ? 'submit' : 'button';
-                button.className = styleClass + (isUniform ? ' btn-uniform' : ''); // Add style class
+                // Combine base btn class with specific style class and potentially uniform class
+                button.className = `btn ${styleClass}` + (isUniform ? ' btn-uniform' : '');
                 button.innerHTML = `<i class="fas fa-${icon}"></i> ${text}`;
                 if (clickHandler) {
                     button.addEventListener('click', clickHandler);
@@ -1221,28 +1171,28 @@
                 return button;
             }
 
+
             function setupButtons() {
                 buttonsContainer.innerHTML = ''; // Clear existing buttons
                 const leftButtonGroup = document.createElement('div');
 
-                // Create standard action buttons
-                 const demoButton = createButton('demoBtn', '填入示範', 'magic', 'secondary-btn', fillDemoData);
-                 const testButton = createButton('testBtn', '本機測試', 'vial', 'btn-success', runTest); // Assuming btn-success exists or use success-color style
-                 const resetButton = createButton('resetBtn', '清除重填', 'undo', 'btn-danger', resetForm); // Assuming btn-danger exists
+                // Use the CSS classes defined in <style>
+                 const demoButton = createButton('demoBtn', '填入示範', 'magic', 'secondary-btn', fillDemoData); // Use secondary-btn class
+                 const testButton = createButton('testBtn', '本機測試', 'vial', 'btn-success', runTest);
+                 const resetButton = createButton('resetBtn', '清除重填', 'undo', 'btn-danger', resetForm);
 
                  leftButtonGroup.appendChild(demoButton);
                  leftButtonGroup.appendChild(testButton);
                  leftButtonGroup.appendChild(resetButton);
 
-                 // Check for and add restore button if recent data exists
                  const savedData = loadDocumentFromLocalStorage();
                  if (savedData && savedData.timestamp) {
                      const timestamp = new Date(savedData.timestamp);
                      const now = new Date();
                      const diffMinutes = Math.floor((now - timestamp) / (1000 * 60));
 
-                     if (diffMinutes < 60) { // Only show if less than 60 minutes old
-                         const restoreButton = createButton('restoreBtn', '恢復上次', 'history', 'btn-info', () => { // Assuming btn-info exists
+                     if (diffMinutes < 60) {
+                         const restoreButton = createButton('restoreBtn', '恢復上次', 'history', 'btn-info', () => {
                              if (savedData.content) {
                                  const processedText = processLegalDocumentText(savedData.content);
                                  documentContent.textContent = processedText;
@@ -1259,23 +1209,19 @@
                  }
 
                 // Create the main submit button
-                const submitButton = createButton('submitBtn', '生成訴狀', 'file-alt', 'btn-primary', null, true); // Assuming btn-primary exists
+                const submitButton = createButton('submitBtn', '生成訴狀', 'file-alt', 'btn-primary', null, true);
 
-                // Add button groups/buttons to the main container
                 buttonsContainer.appendChild(leftButtonGroup);
-                buttonsContainer.appendChild(submitButton); // Add submit button separately for styling/layout
+                buttonsContainer.appendChild(submitButton);
 
-                // Ensure form submit listener is attached (and only once)
-                form.removeEventListener('submit', handleFormSubmit); // Remove potential duplicates
+                form.removeEventListener('submit', handleFormSubmit);
                 form.addEventListener('submit', handleFormSubmit);
             }
 
              // --- Button Action Handlers ---
             function fillDemoData() {
                 log('正在填入示範數據...', 'ui');
-                // Clear previous errors first
                 clearErrors();
-                // Set values for demonstration
                 document.getElementById('caseType').value = '民事起訴狀';
                 document.getElementById('courtName').value = '臺灣臺北地方法院';
                 document.getElementById('plaintiff').value = '林大明\n身分證字號：A123456789\n住址：臺北市信義區市府路1號\n電話：0911-111-111';
@@ -1289,23 +1235,19 @@
                 document.getElementById('precedents').value = '';
                 document.getElementById('email').value = 'demo.user@example.com';
                 document.getElementById('phone').value = '0912-345678';
-                updateAiButtonState(); // Show AI button if process field has content
+                updateAiButtonState();
                 showNotification('已填入示範數據', 'success');
             }
 
             function runTest() {
-                 fillDemoData(); // Start with demo data
+                 fillDemoData();
                  log('開始本機測試流程...', 'test');
                  showNotification('使用示範數據進行本機測試...', 'info');
-                 showLoading("模擬本機生成中...", 2); // Simulate short delay
-
-                 // Simulate API call delay and response
+                 showLoading("模擬本機生成中...", 2);
                  setTimeout(() => {
                      hideLoading();
-                     // Create a realistic-looking test response object (can include action_input)
-                     const testResponse = {
-                         action: "Final Answer",
-                         action_input: `
+                     const testResponse = { // Simulate a response containing the text directly or in 'output'
+                         output: `
 民事起訴狀（測試範本）
 案　　號： （法院自動編列）
 股　　別： （法院自動編列）
@@ -1346,393 +1288,314 @@
 具狀人　林大明 （簽名或蓋章）
 `
                      };
-
-                     // Process and display the test response
-                     const finalOutput = processLegalDocumentText(testResponse);
-                     saveDocumentToLocalStorage(finalOutput); // Save this test result
+                     const finalOutput = processLegalDocumentText(testResponse); // Use the extractor
+                     saveDocumentToLocalStorage(finalOutput);
                      documentContent.textContent = finalOutput;
                      modal.style.display = 'block';
                      log('本機測試訴狀已生成並顯示', 'test');
                      showNotification('本機測試訴狀已生成！', 'success');
-                     setupButtons(); // Refresh buttons (e.g., update restore button state)
-                 }, 1500); // Simulate 1.5 seconds processing time
+                     setupButtons();
+                 }, 1500);
             }
 
             function resetForm() {
                  if (confirm('您確定要清除所有已填寫的欄位嗎？')) {
                      log('執行表單重置', 'ui');
-                     form.reset(); // Reset form fields
-                     clearErrors(); // Clear any validation errors
-                     updateAiButtonState(); // Hide AI button if process field is cleared
+                     form.reset();
+                     clearErrors();
+                     updateAiButtonState();
                      showNotification('表單欄位已清除', 'info');
                  }
              }
 
-            // --- AI Summarize Button Logic ---
+            // --- AI Summarize Button Logic (MODIFIED) ---
             function updateAiButtonState() {
-                if (!caseProcessTextarea || !aiSummarizeButtonContainer) return; // Exit if elements don't exist
-
+                if (!caseProcessTextarea || !aiSummarizeButtonContainer) return;
                 const processValue = caseProcessTextarea.value.trim();
-                aiSummarizeButtonContainer.innerHTML = ''; // Clear previous button
-
+                aiSummarizeButtonContainer.innerHTML = '';
                 if (processValue) {
-                    // Create the AI button using the helper function
                     const aiButton = createButton(
                         'aiSummarizeBtn',
-                        'AI 統整', // Text with emoji
-                        'wand-magic-sparkles', // Font Awesome icon class (without 'fa-')
-                        'btn-accent', // Custom class for accent color styling (or use inline style)
-                        triggerAiSummarize, // Click handler
+                        'AI 統整',
+                        'wand-magic-sparkles',
+                        'btn-accent', // Use the specific CSS class for styling
+                        triggerAiSummarize,
                         false, // Not a submit button
-                        false // Don't apply btn-uniform by default, use specific style
+                        false // Don't apply btn-uniform by default
                     );
-                    // Add specific style if needed via class or directly
-                     // aiButton.style.backgroundColor = 'var(--accent-color)';
-                     // aiButton.style.color = 'var(--primary-color)';
-                     // aiButton.style.padding = '8px 15px';
-                     // aiButton.style.fontSize = '0.9rem';
-
                     aiSummarizeButtonContainer.appendChild(aiButton);
                 }
             }
 
+            // --- MODIFIED triggerAiSummarize Function ---
             async function triggerAiSummarize() {
+                 // 1. Get Case Process text
                  const processText = caseProcessTextarea.value.trim();
                  if (!processText) {
                      showNotification('請先在「案件詳細經過」欄位填寫內容', 'warning');
+                     caseProcessTextarea.focus();
                      return;
                  }
 
+                 // 2. Get Case Title text
+                 const caseTitleInput = document.getElementById('caseTitle');
+                 const caseTitleText = caseTitleInput ? caseTitleInput.value.trim() : '';
+                 if (!caseTitleText) {
+                     showNotification('請先填寫「案件案由」欄位', 'warning');
+                     showError('caseTitle', 'AI 統整需要案件案由'); // Show error near the field
+                     caseTitleInput?.focus();
+                     return; // Stop if title is missing
+                 }
+                 // Clear potential previous error on caseTitle if it's now filled
+                 const caseTitleErrorElement = document.getElementById('caseTitle-error');
+                 if (caseTitleErrorElement && caseTitleErrorElement.style.display !== 'none') {
+                     caseTitleErrorElement.style.display = 'none';
+                     caseTitleInput?.classList.remove('error');
+                 }
+
+
+                 // 3. Check Webhook URL validity
+                 if (!aiWebhookUrl || aiWebhookUrl === 'YOUR_N8N_AI_WEBHOOK_URL_HERE') {
+                     showNotification('AI 統整功能未設定或設定錯誤', 'error');
+                     log('AI 統整失敗：Webhook URL 未設定或無效', 'error');
+                     showError('caseProcess', 'AI 功能設定錯誤');
+                     return;
+                 }
+
+                // 4. Handle Button State
                 const aiButton = document.getElementById('aiSummarizeBtn');
-                let originalButtonText = '';
+                let originalButtonHTML = ''; // Store full HTML
                  if (aiButton) {
-                     originalButtonText = aiButton.innerHTML; // Store original content
+                     originalButtonHTML = aiButton.innerHTML;
                      aiButton.disabled = true;
                      aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 統整中...';
                  }
 
-                log('觸發 AI 統整，發送案件經過到 n8n...', 'request');
+                log('觸發 AI 統整，發送案件經過和案由到 n8n...', 'request');
                 showNotification('正在請求 AI 統整，請稍候...', 'info');
-                 // Show loading indicator maybe? showLoading("AI 統整中...");
 
                 try {
+                    // 5. Create Payload with both fields
+                    const payload = {
+                        caseTitle: caseTitleText,   // Include Case Title
+                        caseProcess: processText    // Include Case Process
+                    };
+                    log('發送到 AI Webhook 的 Payload:', 'debug');
+                    if(DEBUG_MODE) console.log("AI Payload:", JSON.stringify(payload, null, 2));
+
+                    // 6. Make Fetch Request
                     const response = await fetch(aiWebhookUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-User-Id': window.debugInfo.user || 'unknown',
-                            'X-Action': 'summarize-case-process' // More specific action header
+                            'X-Action': 'summarize-case-process-with-title' // Action name updated slightly
                         },
-                        body: JSON.stringify({ caseProcess: processText })
+                        body: JSON.stringify(payload) // Send the combined payload
                     });
 
                     log(`AI 統整回應狀態: ${response.status}`, 'response');
 
+                    // 7. Handle Response
                     if (!response.ok) {
-                        // Try to get error details from response body
                         let errorBody = await response.text();
-                         log(`AI 伺服器錯誤回應內容: ${errorBody}`, 'error');
-                        throw new Error(`AI 統整伺服器錯誤: ${response.status} ${response.statusText}. ${errorBody || ''}`);
+                        log(`AI 伺服器錯誤回應內容: ${errorBody}`, 'error');
+                        let errorMessage = `AI 統整伺服器錯誤: ${response.status} ${response.statusText}.`;
+                        try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; }
+                        catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; }
+                        throw new Error(errorMessage);
                     }
 
-                    const result = await response.json(); // Assume n8n returns JSON
+                    const result = await response.json(); // Expect JSON response on success
                     log('收到 AI 統整結果', 'response');
                     if (DEBUG_MODE) console.log('AI Result:', result);
 
-                    // --- Process AI Result ---
-                     // Example: Fill 'facts' textarea with summary, if summary exists
-                    if (result && result.summary) {
+                    // 8. Process Successful Result (Example: Fill 'facts')
+                    // IMPORTANT: Adjust based on the actual structure n8n returns
+                    const summary = result?.summary || result?.output || result?.text; // Try common keys
+                    if (summary && typeof summary === 'string') {
                          const factsTextarea = document.getElementById('facts');
-                         // Prepend or replace - choose one:
-                         // factsTextarea.value = `【AI 摘要】:\n${result.summary}\n\n【原始輸入或補充理由】:\n` + factsTextarea.value; // Prepend
-                         factsTextarea.value = result.summary; // Replace
-                         showNotification('AI 已將統整結果填入「事實及理由」欄位', 'success', 7000);
-                         factsTextarea.focus(); // Focus on the updated field
+                         // Example: Prepend summary to facts
+                         factsTextarea.value = `【AI 摘要】:\n${summary.trim()}\n\n----------\n【原填寫之事實及理由】:\n` + factsTextarea.value;
+                         showNotification('AI 已將統整摘要附加到「事實及理由」欄位前方', 'success', 7000);
+                         factsTextarea.focus();
+                         // Optionally clear the caseProcess field after successful summary
+                         // caseProcessTextarea.value = '';
+                         // updateAiButtonState(); // Hide button if cleared
                      } else {
-                         showNotification('AI 統整完成，但未收到預期格式的回應', 'warning');
-                         log('AI 回應格式不符預期或無 summary 欄位', 'warning');
+                         showNotification('AI 統整請求成功，但未收到預期格式的回應摘要', 'warning');
+                         log('AI 回應格式不符預期或無 summary/output/text 欄位', 'warning');
+                         // Maybe display raw result?
+                         // document.getElementById('facts').value += `\n\n【AI原始回應】：\n${JSON.stringify(result, null, 2)}`;
                      }
-                     // --- End Process AI Result ---
 
                 } catch (error) {
+                    // 9. Handle Errors
                     console.error('AI Summarize Fetch Error:', error);
                     log(`AI 統整請求失敗: ${error.message}`, 'error');
-                    showNotification('AI 統整失敗：' + error.message, 'error');
-                    showError('caseProcess', 'AI 統整失敗，請檢查內容或稍後再試');
+                    showNotification(`AI 統整失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
+                    showError('caseProcess', `AI 統整失敗`); // Show generic error on field
                 } finally {
-                     // hideLoading(); // Hide general loading if shown
+                    // 10. Restore Button State
                      if (aiButton) {
                          aiButton.disabled = false;
-                         aiButton.innerHTML = originalButtonText; // Restore original button content
+                         aiButton.innerHTML = originalButtonHTML; // Restore original button content
                      }
                 }
             }
 
+
             // --- Main Form Submission Handler ---
             function handleFormSubmit(e) {
-                e.preventDefault(); // Prevent default form submission
+                e.preventDefault();
                 log('接收到表單提交請求', 'ui');
-
                 if (!validateForm()) {
                     showNotification('提交失敗，請檢查表單紅色標示的欄位', 'error');
-                    return; // Stop submission if validation fails
+                    return;
                 }
-
-                // --- Collect Form Data ---
                 const formData = {
                     caseType: document.getElementById('caseType').value,
                     caseNumber: document.getElementById('caseNumber').value || null,
-                    courtInfo: {
-                      name: document.getElementById('courtName').value,
-                      branch: document.getElementById('branchName').value || null
-                    },
+                    courtInfo: { name: document.getElementById('courtName').value, branch: document.getElementById('branchName').value || null },
                     parties: {
-                      plaintiff: {
-                        info: document.getElementById('plaintiff').value,
-                        representative: document.getElementById('plaintiffRepresentative').value || null
-                      },
-                      defendant: {
-                        info: document.getElementById('defendant').value,
-                        representative: document.getElementById('defendantRepresentative').value || null
-                      }
+                      plaintiff: { info: document.getElementById('plaintiff').value, representative: document.getElementById('plaintiffRepresentative').value || null },
+                      defendant: { info: document.getElementById('defendant').value, representative: document.getElementById('defendantRepresentative').value || null }
                     },
-                    caseDetails: { // Renamed for clarity
-                      title: document.getElementById('caseTitle').value, // Cause of Action
-                      requests: document.getElementById('requests').value.split('\n').filter(line => line.trim()), // Claims
-                      factsAndReasons: document.getElementById('facts').value, // Facts & Reasons (keep as single string initially?)
-                       factsAndReasonsList: document.getElementById('facts').value.split('\n').filter(line => line.trim()), // Also provide as list
-                      caseProcess: document.getElementById('caseProcess').value || null, // Detailed process
-                      evidence: document.getElementById('evidence').value.split('\n').filter(line => line.trim()), // Evidence list
-                      laws: document.getElementById('laws').value ? document.getElementById('laws').value.split('\n').filter(line => line.trim()) : [], // Laws list
-                      precedents: document.getElementById('precedents').value ? document.getElementById('precedents').value.split('\n').filter(line => line.trim()) : [] // Rulings list
+                    caseDetails: {
+                      title: document.getElementById('caseTitle').value,
+                      requests: document.getElementById('requests').value.split('\n').filter(line => line.trim()),
+                      factsAndReasons: document.getElementById('facts').value, // Keep raw string?
+                       factsAndReasonsList: document.getElementById('facts').value.split('\n').filter(line => line.trim()),
+                      caseProcess: document.getElementById('caseProcess').value || null,
+                      evidence: document.getElementById('evidence').value.split('\n').filter(line => line.trim()),
+                      laws: document.getElementById('laws').value ? document.getElementById('laws').value.split('\n').filter(line => line.trim()) : [],
+                      precedents: document.getElementById('precedents').value ? document.getElementById('precedents').value.split('\n').filter(line => line.trim()) : []
                     },
-                    contact: {
-                      email: document.getElementById('email').value,
-                      phone: document.getElementById('phone').value || null
-                    },
+                    contact: { email: document.getElementById('email').value, phone: document.getElementById('phone').value || null },
                     metadata: {
                       submissionTimestamp: new Date().toISOString(),
                       formVersion: window.debugInfo.version || 'unknown',
                       userId: window.debugInfo.user || 'unknown',
-                      system: "wtlee328-legal-doc-gen" // System identifier
+                      system: "wtlee328-legal-doc-gen"
                     }
                 };
                 log('表單數據已收集完畢', 'data');
                 if (DEBUG_MODE) console.log("準備發送的數據:", JSON.stringify(formData, null, 2));
 
-                // --- Send Data to N8N for Generation ---
-                showLoading("正在生成訴狀，請稍候...", 45); // Show loading with estimate
-                let secondsLeft = 45; // Timer for estimate
+                showLoading("正在生成訴狀，請稍候...", 45);
+                let secondsLeft = 45;
                 const timerInterval = setInterval(() => {
                     secondsLeft--;
-                    if (secondsLeft > 0) {
-                         estimatedTimeP.textContent = `預計剩餘： ${secondsLeft} 秒`;
-                    } else {
-                         estimatedTimeP.textContent = `仍在處理中，請耐心等候...`; // Update message if it takes longer
-                        clearInterval(timerInterval);
-                    }
+                    if (secondsLeft > 0) { estimatedTimeP.textContent = `預計剩餘： ${secondsLeft} 秒`; }
+                    else { estimatedTimeP.textContent = `仍在處理中，請耐心等候...`; clearInterval(timerInterval); }
                 }, 1000);
 
                 fetch(generateWebhookUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Request-ID': `gen-${Date.now()}-${Math.random().toString(16).substring(2, 8)}` // Example unique ID
-                        // Add other necessary headers like authorization if needed
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-Request-ID': `gen-${Date.now()}-${Math.random().toString(16).substring(2, 8)}` },
                     body: JSON.stringify(formData)
                 })
-                .then(async response => { // Use async here to await response.text() in case of error
-                    clearInterval(timerInterval); // Stop timer on response
+                .then(async response => {
+                    clearInterval(timerInterval);
                     log(`收到 n8n (生成) 回應，狀態: ${response.status}`, 'response');
                     if (!response.ok) {
-                         // Attempt to get more detailed error from response body
-                         let errorBody = await response.text();
-                         log(`伺服器錯誤回應內容: ${errorBody}`, 'error');
+                         let errorBody = await response.text(); log(`伺服器錯誤回應內容: ${errorBody}`, 'error');
                         throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}. ${errorBody || '無詳細錯誤訊息'}`);
                     }
-                    // If response is OK, proceed to get the text body
                     return response.text();
                 })
                 .then(text => {
-                    // Log raw response text for debugging
-                    log("收到原始生成回應文本", 'debug');
-                    if (DEBUG_MODE) console.log("Raw Response Text:", text);
-
-                    let data;
-                    try {
-                        // Attempt to parse as JSON, might contain action_input or just be the text
-                        data = JSON.parse(text);
-                    } catch (e) {
-                        log("生成回應不是有效的 JSON，將直接使用收到的文本", 'debug');
-                        data = text; // Use the raw text if JSON parsing fails
-                    }
-                    return data; // Pass parsed data or raw text to the next step
+                    log("收到原始生成回應文本", 'debug'); if (DEBUG_MODE) console.log("Raw Response Text:", text);
+                    let data; try { data = JSON.parse(text); } catch (e) { log("生成回應不是有效的 JSON，將直接使用收到的文本", 'debug'); data = text; }
+                    return data;
                 })
                 .then(data => {
-                    hideLoading(); // Hide loading overlay
-                    log("收到最終生成回應數據", 'response');
-                    if (DEBUG_MODE) console.log("Processed Response Data:", data);
-
-                    // Process the data (extract action_input if present, handle escapes)
-                    const finalOutput = processLegalDocumentText(data);
-                    log("最終訴狀文本已處理完成", 'process');
-                    if (DEBUG_MODE) console.log("Final Output for Display:", finalOutput);
-
-
-                    // Save the successful result to local storage
+                    hideLoading(); log("收到最終生成回應數據", 'response'); if (DEBUG_MODE) console.log("Processed Response Data:", data);
+                    const finalOutput = processLegalDocumentText(data); // Use the robust extractor
+                    log("最終訴狀文本已處理完成", 'process'); if (DEBUG_MODE) console.log("Final Output for Display:", finalOutput);
                     saveDocumentToLocalStorage(finalOutput);
-
-                    // Display the generated document in the modal
-                    documentContent.textContent = finalOutput || "未能生成內容，請檢查回應。"; // Fallback text
-                    modal.style.display = 'block'; // Show the modal
-                    showNotification('訴狀已成功生成！', 'success');
-
-                    // Refresh buttons state (e.g., restore button might become available)
-                     setupButtons();
-
+                    documentContent.textContent = finalOutput || "未能生成內容，請檢查回應。";
+                    modal.style.display = 'block'; showNotification('訴狀已成功生成！', 'success');
+                    setupButtons();
                 })
                 .catch(error => {
-                    // Handle fetch errors or errors thrown from response checking
-                    clearInterval(timerInterval); // Ensure timer stops on error
-                    hideLoading(); // Hide loading overlay
-                    console.error('Form Submission/Generation Error:', error);
+                    clearInterval(timerInterval); hideLoading(); console.error('Form Submission/Generation Error:', error);
                     log(`生成請求失敗: ${error.message}`, 'error');
-                    // Provide more user-friendly error message
-                    showNotification(`生成訴狀時發生錯誤：${error.message || '未知錯誤'}`, 'error', 8000); // Show longer
+                    showNotification(`生成訴狀時發生錯誤：${error.message || '未知錯誤'}`, 'error', 8000);
                 });
             }
 
-            // --- Modal and Document Actions ---
-             if (closeModalBtn) {
-                 closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
-             }
-             // Close modal on outside click
-             window.addEventListener('click', (event) => {
-                 if (event.target === modal) {
-                     modal.style.display = 'none';
-                 }
-             });
-             // Close modal on Escape key press
-             window.addEventListener('keydown', (event) => {
-                 if (event.key === 'Escape' && modal.style.display === 'block') {
-                     modal.style.display = 'none';
-                 }
-             });
 
-            if (copyBtn) {
+            // --- Modal and Document Actions (Unchanged) ---
+             if (closeModalBtn) { closeModalBtn.addEventListener('click', () => modal.style.display = 'none'); }
+             window.addEventListener('click', (event) => { if (event.target === modal) { modal.style.display = 'none'; } });
+             window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && modal.style.display === 'block') { modal.style.display = 'none'; } });
+             if (copyBtn) { copyBtn.addEventListener('click', () => { /* ... copy logic ... */ }); }
+             if (printBtn) { printBtn.addEventListener('click', () => { /* ... print logic ... */ }); }
+             if (downloadBtn) { downloadBtn.addEventListener('click', () => { /* ... download logic ... */ }); }
+             if (emailBtn) { emailBtn.addEventListener('click', () => { /* ... email logic ... */ }); }
+             // (Include the actual copy/print/download/email logic from previous versions here if needed)
+             // Copy Logic Example:
+             if (copyBtn) {
                  copyBtn.addEventListener('click', () => {
                      const textToCopy = documentContent.textContent;
-                     if (!textToCopy) {
-                         showNotification('沒有內容可複製', 'warning');
-                         return;
-                     }
+                     if (!textToCopy) { showNotification('沒有內容可複製', 'warning'); return; }
                      navigator.clipboard.writeText(textToCopy).then(() => {
-                         showNotification('訴狀內容已複製到剪貼簿', 'success');
-                         log('內容已複製', 'action');
+                         showNotification('訴狀內容已複製到剪貼簿', 'success'); log('內容已複製', 'action');
                      }).catch(err => {
-                         showNotification('複製失敗，瀏覽器可能不支援或未授權', 'error');
-                         log(`複製失敗: ${err.message}`, 'error');
+                         showNotification('複製失敗，瀏覽器可能不支援或未授權', 'error'); log(`複製失敗: ${err.message}`, 'error');
                      });
                  });
              }
-
-            if (printBtn) {
+             // Print Logic Example:
+             if (printBtn) {
                  printBtn.addEventListener('click', () => {
-                      log('觸發列印', 'action');
-                      // Temporarily add a class to ensure modal content is printable
-                      modal.classList.add('printing');
-                      window.print();
-                      // Remove class after print dialog is likely closed
+                      log('觸發列印', 'action'); modal.classList.add('printing'); window.print();
                       setTimeout(() => modal.classList.remove('printing'), 500);
                  });
             }
-
-            if (downloadBtn) {
+            // Download Logic Example:
+             if (downloadBtn) {
                  downloadBtn.addEventListener('click', () => {
                      try {
-                         const text = documentContent.textContent;
-                         if (!text) {
-                             showNotification('沒有內容可下載', 'warning');
-                             return;
-                         }
-                         const caseType = document.getElementById('caseType').value || '訴狀';
-                         const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-                         const filename = `${caseType}_${today}.txt`;
-                         const blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
-                         const link = document.createElement('a');
-                         link.href = URL.createObjectURL(blob);
-                         link.download = filename;
-                         document.body.appendChild(link); // Required for Firefox
-                         link.click();
-                         document.body.removeChild(link); // Clean up
-                         URL.revokeObjectURL(link.href); // Free up memory
-                         showNotification(`已下載文件：${filename}`, 'success');
-                         log(`訴狀已下載為 ${filename}`, 'action');
-                     } catch (e) {
-                          log(`下載失敗: ${e.message}`, 'error');
-                          showNotification('下載文件時發生錯誤', 'error');
-                     }
+                         const text = documentContent.textContent; if (!text) { showNotification('沒有內容可下載', 'warning'); return; }
+                         const caseType = document.getElementById('caseType').value || '訴狀'; const today = new Date().toISOString().slice(0, 10);
+                         const filename = `${caseType}_${today}.txt`; const blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+                         const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
+                         document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href);
+                         showNotification(`已下載文件：${filename}`, 'success'); log(`訴狀已下載為 ${filename}`, 'action');
+                     } catch (e) { log(`下載失敗: ${e.message}`, 'error'); showNotification('下載文件時發生錯誤', 'error'); }
                  });
              }
-
-            if (emailBtn) {
+             // Email Logic Example:
+             if (emailBtn) {
                  emailBtn.addEventListener('click', () => {
-                     const userEmail = document.getElementById('email').value;
-                     const docText = documentContent.textContent;
-
-                     if (!userEmail || !validateEmail(userEmail)) {
-                         showNotification('請先在主表單填寫有效的電子郵件地址', 'warning');
-                         showError('email', '請填寫有效的電子郵件以寄送'); // Highlight main form email
-                         return;
-                     }
-                      if (!docText) {
-                         showNotification('沒有訴狀內容可寄送', 'warning');
-                         return;
-                     }
-
-                     log(`準備模擬發送郵件至 ${userEmail}`, 'action');
-                     showNotification(`即將模擬發送訴狀至：${userEmail}`, 'info');
-                     // --- Simulate Backend Email Sending ---
-                     // In a real application, you would send `userEmail` and `docText`
-                     // to your backend/n8n to handle the actual email sending.
-                     emailBtn.disabled = true;
-                     emailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 寄送中...';
+                     const userEmail = document.getElementById('email').value; const docText = documentContent.textContent;
+                     if (!userEmail || !validateEmail(userEmail)) { showNotification('請先在主表單填寫有效的電子郵件地址', 'warning'); showError('email', '請填寫有效的電子郵件以寄送'); return; }
+                     if (!docText) { showNotification('沒有訴狀內容可寄送', 'warning'); return; }
+                     log(`準備模擬發送郵件至 ${userEmail}`, 'action'); showNotification(`即將模擬發送訴狀至：${userEmail}`, 'info');
+                     emailBtn.disabled = true; emailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 寄送中...';
                      setTimeout(() => {
-                         emailBtn.disabled = false;
-                          emailBtn.innerHTML = '<i class="fas fa-envelope"></i> 寄送Email';
-                         showNotification(`訴狀已「模擬」發送至您的信箱：${userEmail}`, 'success');
-                         log(`模擬郵件已發送至 ${userEmail}`, 'action');
-                     }, 2500); // Simulate network delay
-                     // --- End Simulation ---
+                         emailBtn.disabled = false; emailBtn.innerHTML = '<i class="fas fa-envelope"></i> 寄送Email';
+                         showNotification(`訴狀已「模擬」發送至您的信箱：${userEmail}`, 'success'); log(`模擬郵件已發送至 ${userEmail}`, 'action');
+                     }, 2500);
                  });
              }
+
 
             // --- Initialization ---
              log(`系統初始化 - v${window.debugInfo.version}`, 'init');
-
-             // Initial setup of buttons
              setupButtons();
-
-             // Setup AI button listener and initial state
              if (caseProcessTextarea) {
                  caseProcessTextarea.addEventListener('input', updateAiButtonState);
-                 updateAiButtonState(); // Check initial state
-             } else {
-                 log('未找到案件經過欄位 (caseProcess textarea)', 'warning');
-             }
-
-             // Debug panel toggle listener
+                 updateAiButtonState();
+             } else { log('未找到案件經過欄位 (caseProcess textarea)', 'warning'); }
              document.addEventListener('keydown', (e) => {
                  if (e.altKey && e.key === 'd') {
-                     debugPanel.classList.toggle('active');
-                     log(`調試面板 ${debugPanel.classList.contains('active') ? '開啟' : '關閉'}`, 'ui');
-                     e.preventDefault();
+                     debugPanel.classList.toggle('active'); log(`調試面板 ${debugPanel.classList.contains('active') ? '開啟' : '關閉'}`, 'ui'); e.preventDefault();
                  }
              });
-
-             // Initial notification hint
-             showNotification('按下 Alt+D 可顯示/隱藏調試面板', 'info', 7000); // Longer duration for initial hint
+             showNotification('按下 Alt+D 可顯示/隱藏調試面板', 'info', 7000);
 
         }); // End DOMContentLoaded
     </script>
