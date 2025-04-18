@@ -977,7 +977,7 @@
             // N8N Webhook URLs
             const generateWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-document';
             // !! IMPORTANT: Replace with your actual AI summarization webhook URL !!
-            const aiWebhookUrl = 'YOUR_N8N_AI_WEBHOOK_URL_HERE';
+            const aiWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer';
             const LOCAL_STORAGE_KEY = 'wtlee328_lastLegalDocument';
             const DEBUG_MODE = true; // Set to false to disable console logs for non-errors
 
@@ -1379,7 +1379,7 @@
                     // Create the AI button using the helper function
                     const aiButton = createButton(
                         'aiSummarizeBtn',
-                        'AI 統整 ✨', // Text with emoji
+                        'AI 統整', // Text with emoji
                         'wand-magic-sparkles', // Font Awesome icon class (without 'fa-')
                         'btn-accent', // Custom class for accent color styling (or use inline style)
                         triggerAiSummarize, // Click handler
