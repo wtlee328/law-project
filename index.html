@@ -19,13 +19,13 @@
         window.debugInfo = {
             logRequests: true,
             logResponses: true,
-            version: "wtlee328-debug-2025-04-18-casetype-update-ai-search", // Updated version/date
+            version: "wtlee328-debug-2025-04-18-casetype-update-ai-search-stylefix", // Updated version/date
             user: "wtlee328",
             timestamp: new Date().toISOString() // Use current time
         };
     </script>
     <style>
-        /* --- Base Styles (unchanged but included for completeness) --- */
+        /* --- Base Styles --- */
         :root {
             --primary-color: #1a3b68;
             --secondary-color: #f8f9fa;
@@ -974,9 +974,9 @@
                         <textarea id="precedents" name="precedents" rows="2" placeholder="例：
 最高法院○○年度台上字第○○號判決意旨參照"></textarea>
                         <span class="helper-text">若有引用特定判決可填寫</span>
-                        <!-- === ADDED: Container for AI Search Button === -->
+                        <!-- === Container for AI Search Button === -->
                         <div id="aiSearchButtonContainer"></div>
-                        <!-- === END ADDED === -->
+                        <!-- === END Container === -->
                     </div>
                 </div>
 
@@ -1066,16 +1066,14 @@
             const caseTitleInput = document.getElementById('caseTitle');
             const caseTypeSelect = document.getElementById('caseType');
             const caseTypeCustomInput = document.getElementById('caseTypeCustom');
-            // === ADDED: AI Search Button Container Reference ===
             const aiSearchButtonContainer = document.getElementById('aiSearchButtonContainer');
-            // === END ADDED ===
 
             // --- Configuration ---
             const generateWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-document';
-            const aiOrganizerWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer';
-            // === ADDED: AI Search Webhook URL (REPLACE THIS) ===
-            const aiSearchWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-search';
-            // === END ADDED ===
+            const aiWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer';
+            // === AI Search Webhook URL (REPLACE THIS) ===
+            const aiSearchWebhookUrl = 'YOUR_N8N_AI_SEARCH_WEBHOOK_URL_HERE'; // <<< ！！！請務必替換成您 n8n AI 搜尋的 Webhook URL！！！
+            // === END ===
             const LOCAL_STORAGE_KEY = 'wtlee328_lastLegalDocument';
             const DEBUG_MODE = true;
 
@@ -1104,21 +1102,13 @@
             // --- Form Validation ---
             function validateForm() {
                 let isValid = true; clearErrors(); log('開始表單驗證', 'validation');
-                const requiredFields = [
-                    { id: 'courtName', message: '請選擇法院名稱' }, { id: 'plaintiff', message: '請填寫原告資料' }, { id: 'defendant', message: '請填寫被告資料' }, { id: 'caseTitle', message: '請填寫案件案由' }, { id: 'requests', message: '請填寫訴之聲明 (請求事項)' }, { id: 'facts', message: '請填寫事實及理由' }, { id: 'evidence', message: '請填寫證據名稱及件數' }, { id: 'email', message: '請填寫有效的電子郵件' }
-                ];
+                const requiredFields = [{ id: 'courtName', message: '請選擇法院名稱' }, { id: 'plaintiff', message: '請填寫原告資料' }, { id: 'defendant', message: '請填寫被告資料' }, { id: 'caseTitle', message: '請填寫案件案由' }, { id: 'requests', message: '請填寫訴之聲明 (請求事項)' }, { id: 'facts', message: '請填寫事實及理由' }, { id: 'evidence', message: '請填寫證據名稱及件數' }, { id: 'email', message: '請填寫有效的電子郵件' }];
                 requiredFields.forEach(field => { const element = document.getElementById(field.id); if (!element || !element.value.trim()) { showError(field.id, field.message); log(`驗證失敗: ${field.id} - ${field.message}`, 'validation'); isValid = false; } });
-
-                // Validate Case Type (Select or Custom)
-                const caseTypeVal = caseTypeSelect.value;
-                const caseTypeCustomVal = caseTypeCustomInput.value.trim();
-                if (!caseTypeVal) { showError('caseType', '請選擇或輸入書狀類型'); log(`驗證失敗: caseType - 未選擇`, 'validation'); isValid = false; }
-                else if (caseTypeVal === 'custom' && !caseTypeCustomVal) { showError('caseTypeCustom', '請輸入自訂書狀類型'); log(`驗證失敗: caseTypeCustom - 自訂類型為空`, 'validation'); isValid = false; }
-
+                const caseTypeVal = caseTypeSelect.value; const caseTypeCustomVal = caseTypeCustomInput.value.trim();
+                if (!caseTypeVal) { showError('caseType', '請選擇或輸入書狀類型'); log(`驗證失敗: caseType - 未選擇`, 'validation'); isValid = false; } else if (caseTypeVal === 'custom' && !caseTypeCustomVal) { showError('caseTypeCustom', '請輸入自訂書狀類型'); log(`驗證失敗: caseTypeCustom - 自訂類型為空`, 'validation'); isValid = false; }
                 const factsValue = document.getElementById('facts').value.trim(); if (factsValue && factsValue.split('\n').filter(line => line.trim()).length < 3) { showError('facts', '事實及理由請至少填寫3點'); log(`驗證失敗: facts - 未滿3點`, 'validation'); isValid = false; }
                 const emailValue = document.getElementById('email').value.trim(); if (emailValue && !validateEmail(emailValue)) { showError('email', '請填寫有效的電子郵件格式'); log(`驗證失敗: email - 格式錯誤`, 'validation'); isValid = false; }
-                log(`表單驗證結果: ${isValid ? '通過' : '失敗'}`, 'validation');
-                if (!isValid) { const firstError = form.querySelector('.error'); if (firstError) { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstError.focus({ preventScroll: true }); } } return isValid;
+                log(`表單驗證結果: ${isValid ? '通過' : '失敗'}`, 'validation'); if (!isValid) { const firstError = form.querySelector('.error'); if (firstError) { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstError.focus({ preventScroll: true }); } } return isValid;
             }
 
             // --- Data Handling & Processing ---
@@ -1154,191 +1144,50 @@
             // --- AI Summarize Function ---
             async function triggerAiSummarize() {
                 clearErrors();
-                const caseTypeVal = getCaseTypeValue();
-                if (!caseTypeVal) { showNotification('請選擇或輸入「書狀類型」', 'warning'); if (caseTypeSelect.value === 'custom') { showError('caseTypeCustom', '請輸入自訂書狀類型'); caseTypeCustomInput?.focus(); } else { showError('caseType', '請選擇書狀類型'); caseTypeSelect?.focus(); } return; }
-                const caseTitleText = caseTitleInput ? caseTitleInput.value.trim() : '';
-                if (!caseTitleText) { showNotification('請填寫「案件案由」欄位', 'warning'); showError('caseTitle', 'AI 統整需要案件案由'); caseTitleInput?.focus(); return; }
-                const processText = caseProcessTextarea.value.trim();
-                if (!processText) { showNotification('請先在「案件詳細經過」欄位填寫內容', 'warning'); caseProcessTextarea.focus(); return; }
-                clearErrors();
-                if (!aiOrganizerWebhookUrl || aiOrganizerWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer') { showNotification('AI 統整功能未設定或設定錯誤', 'error'); log('AI 統整失敗：Webhook URL 未設定或無效', 'error'); showError('caseProcess', 'AI 功能設定錯誤'); return; }
-                const aiButton = document.getElementById('aiSummarizeBtn');
-                let originalButtonHTML = ''; if (aiButton) { originalButtonHTML = aiButton.innerHTML; aiButton.disabled = true; aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 統整中...'; }
+                const caseTypeVal = getCaseTypeValue(); if (!caseTypeVal) { showNotification('請選擇或輸入「書狀類型」', 'warning'); if (caseTypeSelect.value === 'custom') { showError('caseTypeCustom', '請輸入自訂書狀類型'); caseTypeCustomInput?.focus(); } else { showError('caseType', '請選擇書狀類型'); caseTypeSelect?.focus(); } return; }
+                const caseTitleText = caseTitleInput ? caseTitleInput.value.trim() : ''; if (!caseTitleText) { showNotification('請填寫「案件案由」欄位', 'warning'); showError('caseTitle', 'AI 統整需要案件案由'); caseTitleInput?.focus(); return; }
+                const processText = caseProcessTextarea.value.trim(); if (!processText) { showNotification('請先在「案件詳細經過」欄位填寫內容', 'warning'); caseProcessTextarea.focus(); return; }
+                clearErrors(); if (!aiWebhookUrl || aiWebhookUrl === 'YOUR_N8N_SUMMARIZE_WEBHOOK_URL_HERE') { showNotification('AI 統整功能未設定或設定錯誤', 'error'); log('AI 統整失敗：Webhook URL 未設定或無效', 'error'); showError('caseProcess', 'AI 功能設定錯誤'); return; }
+                const aiButton = document.getElementById('aiSummarizeBtn'); let originalButtonHTML = ''; if (aiButton) { originalButtonHTML = aiButton.innerHTML; aiButton.disabled = true; aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 統整中...'; }
                 log('觸發 AI 統整，發送 類型+案由+經過 到 n8n...', 'request'); showNotification('正在請求 AI 統整，請稍候...', 'info');
                 try {
-                    const payload = { caseType: caseTypeVal, caseTitle: caseTitleText, caseProcess: processText };
-                    log('發送到 AI Webhook 的 Payload:', 'debug'); if (DEBUG_MODE) console.log("AI Payload:", JSON.stringify(payload, null, 2));
-                    const response = await fetch(aiOrganizerWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': window.debugInfo.user || 'unknown', 'X-Action': 'analyze-case-details' }, body: JSON.stringify(payload) });
-                    log(`AI 統整回應狀態: ${response.status}`, 'response');
+                    const payload = { caseType: caseTypeVal, caseTitle: caseTitleText, caseProcess: processText }; log('發送到 AI Webhook 的 Payload:', 'debug'); if (DEBUG_MODE) console.log("AI Payload:", JSON.stringify(payload, null, 2));
+                    const response = await fetch(aiWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': window.debugInfo.user || 'unknown', 'X-Action': 'analyze-case-details' }, body: JSON.stringify(payload) }); log(`AI 統整回應狀態: ${response.status}`, 'response');
                     if (!response.ok) { let errorBody = await response.text(); log(`AI 伺服器錯誤回應內容: ${errorBody}`, 'error'); let errorMessage = `AI 統整伺服器錯誤: ${response.status} ${response.statusText}.`; try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; } catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; } throw new Error(errorMessage); }
-                    const result = await response.json();
-                    log('收到 AI 統整結果', 'response'); if (DEBUG_MODE) console.log('AI Result (Raw):', JSON.stringify(result, null, 2));
-                    let aiData;
-                    if (Array.isArray(result) && result.length > 0) { aiData = result[0]; log('從回應陣列的第一個元素提取數據', 'process'); }
-                    else if (typeof result === 'object' && result !== null && !Array.isArray(result)) { aiData = result; log('直接使用回應物件作為數據', 'process'); }
-                    else { showNotification('AI 回應格式無法識別或為空', 'error', 8000); log(`AI 回應格式非預期陣列或物件: ${typeof result}`, 'error'); throw new Error('AI 回應格式無法識別'); }
-                    if (!aiData) { showNotification('AI 回應格式錯誤，無法提取有效數據', 'error', 8000); log('無法從回應中提取有效的 aiData 物件', 'error'); }
-                    else {
+                    const result = await response.json(); log('收到 AI 統整結果', 'response'); if (DEBUG_MODE) console.log('AI Result (Raw):', JSON.stringify(result, null, 2));
+                    let aiData; if (Array.isArray(result) && result.length > 0) { aiData = result[0]; log('從回應陣列的第一個元素提取數據', 'process'); } else if (typeof result === 'object' && result !== null && !Array.isArray(result)) { aiData = result; log('直接使用回應物件作為數據', 'process'); } else { showNotification('AI 回應格式無法識別或為空', 'error', 8000); log(`AI 回應格式非預期陣列或物件: ${typeof result}`, 'error'); throw new Error('AI 回應格式無法識別'); }
+                    if (!aiData) { showNotification('AI 回應格式錯誤，無法提取有效數據', 'error', 8000); log('無法從回應中提取有效的 aiData 物件', 'error'); } else {
                         log('提取到的 AI 結構化數據:', 'response'); if (DEBUG_MODE) console.log('AI Data (Extracted):', JSON.stringify(aiData, null, 2));
-                        if (aiData.parseError) { showNotification(`AI 回應解析錯誤: ${aiData.parseError}`, 'error', 8000); log(`n8n 報告解析錯誤: ${aiData.parseError}`, 'error'); if (aiData.rawOutput) { console.error("LLM Raw Output (解析失敗):", aiData.rawOutput); } }
-                        else if (aiData.warning) { showNotification(`AI 回應結構可能不完整: ${aiData.warning}`, 'warning', 7000); log(`n8n 報告結構警告: ${aiData.warning}`, 'warning'); populateFieldsFromAI(aiData); }
-                        else if (aiData.claims && aiData.facts && aiData.laws) { populateFieldsFromAI(aiData); showNotification('AI 分析完成，已填入相關欄位！', 'success'); }
-                        else { showNotification('AI 回應成功，但缺少預期的 claims/facts/laws 數據', 'warning'); log('AI 成功回應，但提取的數據物件內缺少預期鍵值', 'warning'); populateFieldsFromAI(aiData); }
+                        if (aiData.parseError) { showNotification(`AI 回應解析錯誤: ${aiData.parseError}`, 'error', 8000); log(`n8n 報告解析錯誤: ${aiData.parseError}`, 'error'); if (aiData.rawOutput) { console.error("LLM Raw Output (解析失敗):", aiData.rawOutput); } } else if (aiData.warning) { showNotification(`AI 回應結構可能不完整: ${aiData.warning}`, 'warning', 7000); log(`n8n 報告結構警告: ${aiData.warning}`, 'warning'); populateFieldsFromAI(aiData); } else if (aiData.claims && aiData.facts && aiData.laws) { populateFieldsFromAI(aiData); showNotification('AI 分析完成，已填入相關欄位！', 'success'); } else { showNotification('AI 回應成功，但缺少預期的 claims/facts/laws 數據', 'warning'); log('AI 成功回應，但提取的數據物件內缺少預期鍵值', 'warning'); populateFieldsFromAI(aiData); }
                     }
                 } catch (error) { console.error('AI Summarize Fetch Error:', error); log(`AI 統整請求失敗: ${error.message}`, 'error'); showNotification(`AI 統整失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000); showError('caseProcess', `AI 統整失敗`); }
                 finally { if (aiButton) { aiButton.disabled = false; aiButton.innerHTML = originalButtonHTML; } }
             }
 
-            // === ADDED: AI Search Function ===
+            // --- AI Search Function ---
             async function triggerAiSearch() {
                 clearErrors();
-                const caseTitleText = document.getElementById('caseTitle')?.value.trim();
-                const factsText = document.getElementById('facts')?.value.trim(); // Might be useful context
-                const precedentsTextarea = document.getElementById('precedents'); // Target textarea
-
-                // Validate required input for search
-                if (!caseTitleText) {
-                    showNotification('請先填寫「案件案由」以利 AI 搜尋相關判決', 'warning');
-                    showError('caseTitle', 'AI 搜尋需要案件案由');
-                    document.getElementById('caseTitle')?.focus();
-                    return;
-                }
-                // Optional: Add check for facts if needed
-                // if (!factsText) { ... }
-
-                // Check if webhook URL is set
-                if (!aiSearchWebhookUrl || aiSearchWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-search') {
-                    showNotification('AI 搜尋功能未設定或設定錯誤 (Webhook URL)', 'error');
-                    log('AI 搜尋失敗：Webhook URL 未設定或無效', 'error');
-                    // Optionally show error near the button or relevant field
-                    // showError('precedents', 'AI 搜尋功能設定錯誤');
-                    return;
-                }
-
-                // Button loading state
-                const aiButton = document.getElementById('aiSearchBtn');
-                let originalButtonHTML = '';
-                if (aiButton) {
-                    originalButtonHTML = aiButton.innerHTML;
-                    aiButton.disabled = true;
-                    aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜尋中...';
-                }
-
-                log('觸發 AI 判決搜尋...', 'request');
-                showNotification('正在請求 AI 搜尋相關判決...', 'info');
-
+                const caseTitleText = document.getElementById('caseTitle')?.value.trim(); const factsText = document.getElementById('facts')?.value.trim(); const precedentsTextarea = document.getElementById('precedents');
+                if (!caseTitleText) { showNotification('請先填寫「案件案由」以利 AI 搜尋相關判決', 'warning'); showError('caseTitle', 'AI 搜尋需要案件案由'); document.getElementById('caseTitle')?.focus(); return; }
+                if (!aiSearchWebhookUrl || aiSearchWebhookUrl === 'YOUR_N8N_AI_SEARCH_WEBHOOK_URL_HERE') { showNotification('AI 搜尋功能未設定或設定錯誤 (Webhook URL)', 'error'); log('AI 搜尋失敗：Webhook URL 未設定或無效', 'error'); return; }
+                const aiButton = document.getElementById('aiSearchBtn'); let originalButtonHTML = ''; if (aiButton) { originalButtonHTML = aiButton.innerHTML; aiButton.disabled = true; aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜尋中...'; }
+                log('觸發 AI 判決搜尋...', 'request'); showNotification('正在請求 AI 搜尋相關判決...', 'info');
                 try {
-                    // Prepare payload for the search webhook
-                    const payload = {
-                        action: 'search_precedents', // Indicate the action to n8n
-                        caseTitle: caseTitleText,
-                        factsSummary: factsText.substring(0, 800) // Send facts summary (limit length if needed)
-                        // Add other relevant fields if your n8n workflow needs them (e.g., caseType)
-                        // caseType: getCaseTypeValue()
-                    };
-                    log('發送到 AI Search Webhook 的 Payload:', 'debug');
-                    if (DEBUG_MODE) console.log("AI Search Payload:", JSON.stringify(payload, null, 2));
-
-                    // Make the fetch request
-                    const response = await fetch(aiSearchWebhookUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-User-Id': window.debugInfo.user || 'unknown',
-                            'X-Action': 'search-precedents' // Custom header for action
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    log(`AI 搜尋回應狀態: ${response.status}`, 'response');
-
-                    // Handle non-OK responses
-                    if (!response.ok) {
-                        let errorBody = await response.text();
-                        log(`AI 搜尋伺服器錯誤回應內容: ${errorBody}`, 'error');
-                        let errorMessage = `AI 搜尋伺服器錯誤: ${response.status} ${response.statusText}.`;
-                        try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; }
-                        catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; }
-                        throw new Error(errorMessage);
-                    }
-
-                    // Parse the JSON response (expecting something like { precedents: ["...", "..."] })
-                    const result = await response.json();
-                    log('收到 AI 搜尋結果', 'response');
-                    if (DEBUG_MODE) console.log('AI Search Result (Raw):', JSON.stringify(result, null, 2));
-
-                    // --- Process search results ---
-                    let foundPrecedents = [];
-                    // Adapt based on your actual n8n response structure:
-                    if (Array.isArray(result) && result.length > 0 && result[0].precedents && Array.isArray(result[0].precedents)) {
-                        // Handles n8n structure like: [{ "precedents": [...] }]
-                        foundPrecedents = result[0].precedents;
-                        log(`從回應陣列提取 ${foundPrecedents.length} 筆判決`, 'process');
-                    } else if (typeof result === 'object' && result !== null && result.precedents && Array.isArray(result.precedents)) {
-                        // Handles n8n structure like: { "precedents": [...] }
-                        foundPrecedents = result.precedents;
-                        log(`從回應物件提取 ${foundPrecedents.length} 筆判決`, 'process');
-                    } else {
-                        log(`AI 搜尋回應格式非預期或未找到判決資料`, 'warning');
-                        // Add checks for other possible keys if your n8n workflow returns differently
-                    }
-
-                    // Update the precedents textarea
-                    if (precedentsTextarea) {
-                        if (foundPrecedents.length > 0) {
-                            const newText = foundPrecedents.join('\n');
-                            // Option 1: Overwrite existing content
-                            precedentsTextarea.value = newText;
-                            // Option 2: Append to existing content
-                            // precedentsTextarea.value += (precedentsTextarea.value.trim() ? '\n' : '') + newText;
-
-                            showNotification(`AI 找到 ${foundPrecedents.length} 筆相關判決參考`, 'success');
-                            log(`已將 ${foundPrecedents.length} 筆判決填入欄位`, 'ui');
-                            precedentsTextarea.focus(); // Bring focus to the updated field
-                            precedentsTextarea.scrollTop = precedentsTextarea.scrollHeight; // Scroll to bottom
-                        } else {
-                            showNotification('AI 未找到相關判決，或回應格式不符', 'info');
-                        }
-                    } else {
-                        log('無法找到 "相關判決" 的 textarea 元素', 'error');
-                        showNotification('無法將結果填入欄位 (內部錯誤)', 'error');
-                    }
-
-                } catch (error) {
-                    // Handle fetch or processing errors
-                    console.error('AI Search Fetch Error:', error);
-                    log(`AI 搜尋請求失敗: ${error.message}`, 'error');
-                    showNotification(`AI 搜尋失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
-                    // Optionally show error near the button
-                    // showError('precedents', 'AI 搜尋失敗');
-                } finally {
-                    // Restore button state
-                    if (aiButton) {
-                        aiButton.disabled = false;
-                        aiButton.innerHTML = originalButtonHTML;
-                    }
-                }
+                    const payload = { action: 'search_precedents', caseTitle: caseTitleText, factsSummary: factsText.substring(0, 800) }; log('發送到 AI Search Webhook 的 Payload:', 'debug'); if (DEBUG_MODE) console.log("AI Search Payload:", JSON.stringify(payload, null, 2));
+                    const response = await fetch(aiSearchWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': window.debugInfo.user || 'unknown', 'X-Action': 'search-precedents' }, body: JSON.stringify(payload) }); log(`AI 搜尋回應狀態: ${response.status}`, 'response');
+                    if (!response.ok) { let errorBody = await response.text(); log(`AI 搜尋伺服器錯誤回應內容: ${errorBody}`, 'error'); let errorMessage = `AI 搜尋伺服器錯誤: ${response.status} ${response.statusText}.`; try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; } catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; } throw new Error(errorMessage); }
+                    const result = await response.json(); log('收到 AI 搜尋結果', 'response'); if (DEBUG_MODE) console.log('AI Search Result (Raw):', JSON.stringify(result, null, 2));
+                    let foundPrecedents = []; if (Array.isArray(result) && result.length > 0 && result[0].precedents && Array.isArray(result[0].precedents)) { foundPrecedents = result[0].precedents; log(`從回應陣列提取 ${foundPrecedents.length} 筆判決`, 'process'); } else if (typeof result === 'object' && result !== null && result.precedents && Array.isArray(result.precedents)) { foundPrecedents = result.precedents; log(`從回應物件提取 ${foundPrecedents.length} 筆判決`, 'process'); } else { log(`AI 搜尋回應格式非預期或未找到判決資料`, 'warning'); }
+                    if (precedentsTextarea) { if (foundPrecedents.length > 0) { const newText = foundPrecedents.join('\n'); precedentsTextarea.value = newText; showNotification(`AI 找到 ${foundPrecedents.length} 筆相關判決參考`, 'success'); log(`已將 ${foundPrecedents.length} 筆判決填入欄位`, 'ui'); precedentsTextarea.focus(); precedentsTextarea.scrollTop = precedentsTextarea.scrollHeight; } else { showNotification('AI 未找到相關判決，或回應格式不符', 'info'); } } else { log('無法找到 "相關判決" 的 textarea 元素', 'error'); showNotification('無法將結果填入欄位 (內部錯誤)', 'error'); }
+                } catch (error) { console.error('AI Search Fetch Error:', error); log(`AI 搜尋請求失敗: ${error.message}`, 'error'); showNotification(`AI 搜尋失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000); }
+                finally { if (aiButton) { aiButton.disabled = false; aiButton.innerHTML = originalButtonHTML; } }
             }
-            // === END ADDED Function ===
 
             // --- Main Form Submission Handler ---
             function handleFormSubmit(e) {
-                e.preventDefault(); log('接收到表單提交請求', 'ui');
-                if (!validateForm()) { showNotification('提交失敗，請檢查表單紅色標示的欄位', 'error'); return; }
-
-                const finalCaseType = getCaseTypeValue();
-                log(`提交的書狀類型: ${finalCaseType}`, 'data');
-
-                const formData = {
-                    caseType: finalCaseType,
-                    caseNumber: document.getElementById('caseNumber').value || null,
-                    courtInfo: { name: document.getElementById('courtName').value, branch: document.getElementById('branchName').value || null },
-                    parties: { plaintiff: { info: document.getElementById('plaintiff').value, representative: document.getElementById('plaintiffRepresentative').value || null }, defendant: { info: document.getElementById('defendant').value, representative: document.getElementById('defendantRepresentative').value || null } },
-                    caseDetails: { title: document.getElementById('caseTitle').value, requests: document.getElementById('requests').value.split('\n').filter(line => line.trim()), factsAndReasons: document.getElementById('facts').value, factsAndReasonsList: document.getElementById('facts').value.split('\n').filter(line => line.trim()), caseProcess: document.getElementById('caseProcess').value || null, evidence: document.getElementById('evidence').value.split('\n').filter(line => line.trim()), laws: document.getElementById('laws').value ? document.getElementById('laws').value.split('\n').filter(line => line.trim()) : [], precedents: document.getElementById('precedents').value ? document.getElementById('precedents').value.split('\n').filter(line => line.trim()) : [] },
-                    contact: { email: document.getElementById('email').value, phone: document.getElementById('phone').value || null },
-                    metadata: { submissionTimestamp: new Date().toISOString(), formVersion: window.debugInfo.version || 'unknown', userId: window.debugInfo.user || 'unknown', system: "wtlee328-legal-doc-gen" }
-                };
-                log('表單數據已收集完畢', 'data'); if (DEBUG_MODE) console.log("準備發送的數據:", JSON.stringify(formData, null, 2));
+                e.preventDefault(); log('接收到表單提交請求', 'ui'); if (!validateForm()) { showNotification('提交失敗，請檢查表單紅色標示的欄位', 'error'); return; }
+                const finalCaseType = getCaseTypeValue(); log(`提交的書狀類型: ${finalCaseType}`, 'data');
+                const formData = { caseType: finalCaseType, caseNumber: document.getElementById('caseNumber').value || null, courtInfo: { name: document.getElementById('courtName').value, branch: document.getElementById('branchName').value || null }, parties: { plaintiff: { info: document.getElementById('plaintiff').value, representative: document.getElementById('plaintiffRepresentative').value || null }, defendant: { info: document.getElementById('defendant').value, representative: document.getElementById('defendantRepresentative').value || null } }, caseDetails: { title: document.getElementById('caseTitle').value, requests: document.getElementById('requests').value.split('\n').filter(line => line.trim()), factsAndReasons: document.getElementById('facts').value, factsAndReasonsList: document.getElementById('facts').value.split('\n').filter(line => line.trim()), caseProcess: document.getElementById('caseProcess').value || null, evidence: document.getElementById('evidence').value.split('\n').filter(line => line.trim()), laws: document.getElementById('laws').value ? document.getElementById('laws').value.split('\n').filter(line => line.trim()) : [], precedents: document.getElementById('precedents').value ? document.getElementById('precedents').value.split('\n').filter(line => line.trim()) : [] }, contact: { email: document.getElementById('email').value, phone: document.getElementById('phone').value || null }, metadata: { submissionTimestamp: new Date().toISOString(), formVersion: window.debugInfo.version || 'unknown', userId: window.debugInfo.user || 'unknown', system: "wtlee328-legal-doc-gen" } }; log('表單數據已收集完畢', 'data'); if (DEBUG_MODE) console.log("準備發送的數據:", JSON.stringify(formData, null, 2));
                 showLoading("正在生成訴狀，請稍候...", 45); let secondsLeft = 45; const timerInterval = setInterval(() => { secondsLeft--; if (secondsLeft > 0) { estimatedTimeP.textContent = `預計剩餘： ${secondsLeft} 秒`; } else { estimatedTimeP.textContent = `仍在處理中，請耐心等候...`; clearInterval(timerInterval); } }, 1000);
                 fetch(generateWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Request-ID': `gen-${Date.now()}-${Math.random().toString(16).substring(2, 8)}` }, body: JSON.stringify(formData) })
                     .then(async response => { clearInterval(timerInterval); log(`收到 n8n (生成) 回應，狀態: ${response.status}`, 'response'); if (!response.ok) { let errorBody = await response.text(); log(`伺服器錯誤回應內容: ${errorBody}`, 'error'); throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}. ${errorBody || '無詳細錯誤訊息'}`); } return response.text(); })
@@ -1361,23 +1210,23 @@
             log(`系統初始化 - v${window.debugInfo.version}`, 'init');
             setupButtons(); // Setup main form buttons
 
-            // === ADDED: Create and add AI Search Button on load ===
+            // === Create and add AI Search Button on load (STYLE FIXED) ===
             if (aiSearchButtonContainer) {
                 const aiSearchButton = createButton(
                     'aiSearchBtn',            // id
                     'AI 搜尋',               // text
                     'search',                 // icon
-                    'btn-info',               // styleClass (Use info blue for distinction)
+                    'btn-accent',             // *** CHANGED: styleClass to match AI Summarize (gold) ***
                     triggerAiSearch,          // clickHandler
                     false,                    // isSubmit
                     false                     // isUniform (false = match AI Summarize size)
                 );
                 aiSearchButtonContainer.appendChild(aiSearchButton);
-                log('AI 搜尋按鈕已添加', 'init');
+                log('AI 搜尋按鈕已添加 (樣式已修正)', 'init');
             } else {
                 log('未找到 AI 搜尋按鈕容器 (aiSearchButtonContainer)', 'warning');
             }
-            // === END ADDED ===
+            // === END ===
 
             // Add Event Listener for Case Type Change
             if (caseTypeSelect) {
