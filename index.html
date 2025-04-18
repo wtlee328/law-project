@@ -1403,6 +1403,7 @@
 
                 // --- Step 1: Generate Keywords ---
                 if (aiSearchState === 'initial') {
+                    // ... (Step 1 code remains the same) ...
                     log('AI 搜尋 - 步驟 1: 生成關鍵字', 'ui');
                     const caseTitleText = caseTitleInput?.value.trim();
                     const lawsValue = lawsTextarea?.value.trim(); // Get Applicable Laws text
@@ -1425,21 +1426,17 @@
                          );
                     }
 
-                    // *** MODIFIED PART START ***
                     // From Laws: Extract specific law patterns (e.g., 民法第xx條)
                     if (lawsValue) {
-                        // Regex to capture patterns like "民法 第 123 條", "OOXX法第45條" etc.
-                        // It captures: Chinese characters + "法" + "第" + optional space + digits + optional space + "條"
                         const lawPattern = /^[\s•●-]*([\u4e00-\u9fa5]+法\s?第\s?\d+\s?條)/;
                         lawsValue.split('\n').forEach(line => {
                             const match = line.trim().match(lawPattern);
-                            if (match && match[1]) { // If pattern matches, add the captured group (e.g., "民法第123條")
-                                keywords.push(match[1].replace(/\s/g, '')); // Add matched law article, remove internal spaces
+                            if (match && match[1]) {
+                                keywords.push(match[1].replace(/\s/g, ''));
                             }
                         });
                         log(`從適用法條提取到符合格式的關鍵字 ${keywords.length - (caseTitleText ? caseTitleText.split(/[\s,、，；;]+/).map(kw => kw.trim()).filter(kw => kw.length > 0).length : 0)} 個`, 'debug');
                     }
-                    // *** MODIFIED PART END ***
 
 
                     // Unique keywords
@@ -1457,11 +1454,12 @@
                     aiSearchState = 'keywords_ready';
                     log('AI 搜尋進入 "keywords_ready" 狀態', 'ui');
 
+
                 }
                 // --- Step 2: Send Keywords to Webhook ---
                 else if (aiSearchState === 'keywords_ready') {
                     log('AI 搜尋 - 步驟 2: 送出關鍵字進行搜尋', 'request');
-                    const currentKeywords = getCurrentKeywords();
+                    const currentKeywords = getCurrentKeywords(); // Get keywords as an array
                     const factsText = factsTextarea?.value.trim();
 
                     if (currentKeywords.length === 0) {
@@ -1470,18 +1468,29 @@
                         return;
                     }
 
+                    // *** MODIFIED PART START ***
+                    // Join keywords with '&' into a single string
+                    const keywordsString = currentKeywords.join('&');
+                    log(`組合後的關鍵字字串: ${keywordsString}`, 'debug');
+                    // *** MODIFIED PART END ***
+
+
                     let originalButtonHTML = aiButton.innerHTML;
                     aiButton.disabled = true;
                     aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜尋中...';
                     showNotification('正在請求 AI 搜尋相關判決...', 'info');
 
                     try {
+                        // *** MODIFIED PART START ***
+                        // Construct payload using the keywordsString
                         const payload = {
-                            action: 'search_precedents_keywords', // Indicate keyword-based search
-                            keywords: currentKeywords,
-                            factsSummary: factsText ? factsText.substring(0, 800) : null // Still include facts summary if available
+                            action: 'search_precedents_keywords', // Or keep your previous action name
+                            keywords: keywordsString,            // Send the joined string
+                            factsSummary: factsText ? factsText.substring(0, 800) : null
                         };
-                        log('發送到 AI Search Webhook 的 Payload (Keywords):', 'debug');
+                        // *** MODIFIED PART END ***
+
+                        log('發送到 AI Search Webhook 的 Payload (Keywords String):', 'debug');
                         if (DEBUG_MODE) console.log("AI Search Payload:", JSON.stringify(payload, null, 2));
 
                         const response = await fetch(aiSearchWebhookUrl, {
@@ -1489,14 +1498,15 @@
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-User-Id': window.debugInfo.user || 'unknown',
-                                'X-Action': 'search-precedents-keywords'
+                                'X-Action': 'search-precedents-keywords' // Match your n8n workflow expectation if needed
                             },
                             body: JSON.stringify(payload)
                         });
                         log(`AI 搜尋回應狀態: ${response.status}`, 'response');
 
                         if (!response.ok) {
-                            let errorBody = await response.text();
+                           // ... (Error handling remains the same) ...
+                           let errorBody = await response.text();
                             log(`AI 搜尋伺服器錯誤回應內容: ${errorBody}`, 'error');
                             let errorMessage = `AI 搜尋伺服器錯誤: ${response.status} ${response.statusText}.`;
                             try {
@@ -1512,7 +1522,8 @@
                         log('收到 AI 搜尋結果', 'response');
                         if (DEBUG_MODE) console.log('AI Search Result (Raw):', JSON.stringify(result, null, 2));
 
-                        let foundPrecedents = [];
+                        // ... (Processing search results remains the same) ...
+                         let foundPrecedents = [];
                         if (Array.isArray(result) && result.length > 0 && result[0].precedents && Array.isArray(result[0].precedents)) {
                             foundPrecedents = result[0].precedents;
                             log(`從回應陣列提取 ${foundPrecedents.length} 筆判決`, 'process');
@@ -1527,7 +1538,6 @@
                             if (foundPrecedents.length > 0) {
                                 const newText = foundPrecedents.join('\n');
                                 const currentVal = precedentsTextarea.value.trim();
-                                // Append if different, replace if empty
                                 precedentsTextarea.value = currentVal ? (currentVal + "\n---\n" + newText) : newText;
                                 showNotification(`AI 找到 ${foundPrecedents.length} 筆相關判決參考 (已附加)`, 'success');
                                 log(`已將 ${foundPrecedents.length} 筆判決附加至欄位`, 'ui');
@@ -1540,7 +1550,9 @@
                             log('無法找到 "相關判決" 的 textarea 元素', 'error');
                             showNotification('無法將結果填入欄位 (內部錯誤)', 'error');
                         }
+
                     } catch (error) {
+                        // ... (Error handling remains the same) ...
                         console.error('AI Search Fetch Error:', error);
                         log(`AI 搜尋請求失敗: ${error.message}`, 'error');
                         showNotification(`AI 搜尋失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
