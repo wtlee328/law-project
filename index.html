@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         // Global Error Handler
-        window.onerror = function(message, source, lineno, colno, error) {
+        window.onerror = function (message, source, lineno, colno, error) {
             console.error("Global Error:", message, "Source:", source, "Line:", lineno);
             alert("System Error: " + message);
             return true; // Prevents the default browser error handler
@@ -28,81 +29,753 @@
         :root {
             --primary-color: #1a3b68;
             --secondary-color: #f8f9fa;
-            --accent-color: #d4a760; /* Gold */
+            --accent-color: #d4a760;
+            /* Gold */
             --text-color: #333;
             --border-color: #ddd;
             --success-color: #28a745;
             --error-color: #dc3545;
             --warning-color: #ffc107;
-            --info-color: #17a2b8; /* Info blue */
+            --info-color: #17a2b8;
+            /* Info blue */
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Noto Sans TC', Arial, sans-serif; line-height: 1.6; color: var(--text-color); background-color: #f5f5f5; padding: 0; margin: 0; }
-        .container { max-width: 900px; margin: 20px auto; padding: 20px; }
-        header { background-color: var(--primary-color); color: white; padding: 1rem; text-align: center; margin-bottom: 2rem; border-radius: 8px 8px 0 0; }
-        header h1 { margin: 0; font-size: 1.8rem; }
-        .card { background-color: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); padding: 2rem; margin-bottom: 2rem; }
-        h2 { color: var(--primary-color); margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 2px solid var(--accent-color); font-weight: 600; }
-        h3 { color: var(--primary-color); margin-bottom: 1rem; font-weight: 600; }
-        .form-group { margin-bottom: 1.5rem; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--primary-color); font-size: 0.95rem; }
-        .required:after { content: " *"; color: var(--error-color); }
-        input[type="text"], input[type="email"], select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 1rem; transition: border-color 0.3s ease, box-shadow 0.3s ease; background-color: #fff; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(212, 167, 96, 0.25); }
-        textarea { min-height: 120px; resize: vertical; }
-        .form-section { background-color: var(--secondary-color); padding: 1.5rem; border-radius: 6px; margin-bottom: 2rem; border-left: 5px solid var(--primary-color); }
-        .form-row { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1rem; }
-        .form-col { flex: 1; min-width: 200px; }
-        button, .btn { border: none; padding: 10px 20px; font-size: 1rem; border-radius: 4px; cursor: pointer; font-weight: 600; transition: background-color 0.3s, opacity 0.3s, transform 0.1s; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; line-height: 1.5; text-decoration: none; }
-        button:active, .btn:active { transform: scale(0.98); }
-        button i, .btn i { margin-right: 8px; }
-        button:disabled, .btn:disabled { opacity: 0.65; cursor: not-allowed; }
-        .btn-primary { background-color: var(--primary-color); color: white; } .btn-primary:hover:not(:disabled) { background-color: #0f2a53; }
-        .secondary-btn, .btn-secondary { background-color: #6c757d; color: white; } .secondary-btn:hover:not(:disabled), .btn-secondary:hover:not(:disabled) { background-color: #5a6268; }
-        .btn-success { background-color: var(--success-color); color: white; } .btn-success:hover:not(:disabled) { background-color: #218838; }
-        .btn-danger { background-color: var(--error-color); color: white; } .btn-danger:hover:not(:disabled) { background-color: #c82333; }
-        .btn-info { background-color: var(--info-color); color: white; } .btn-info:hover:not(:disabled) { background-color: #138496; }
-        .btn-accent { background-color: var(--accent-color); color: var(--primary-color); } .btn-accent:hover:not(:disabled) { background-color: #c89a50; } .btn-accent:disabled { background-color: #e0c8a0; color: #a0a0a0; }
-        #aiSummarizeBtn { padding: 8px 15px; font-size: 0.9rem; }
-        #aiSummarizeButtonContainer { margin-top: 10px; text-align: right; }
-        .buttons-container { display: flex; justify-content: space-between; margin-top: 2.5rem; flex-wrap: wrap; gap: 10px; }
-        .buttons-container > div:first-child { display: flex; flex-wrap: wrap; gap: 10px; }
-        @media (min-width: 769px) { .btn-uniform { min-width: 120px; height: 44px; padding: 10px 15px !important; font-size: 0.95rem !important; white-space: nowrap !important; } .buttons-container { align-items: center; } }
-        .document-buttons .btn-uniform, .document-buttons button { min-width: 120px; height: 40px; padding: 8px 15px !important; font-size: 0.9rem !important; white-space: nowrap !important; }
-        .helper-text { display: block; margin-top: 6px; font-size: 0.85rem; color: #6c757d; }
-        .error-message { color: var(--error-color); font-size: 0.85rem; margin-top: 6px; display: none; font-weight: 500; }
-        input.error, textarea.error, select.error { border-color: var(--error-color) !important; background-color: #fff3f3; }
-        input.error:focus, textarea.error:focus, select.error:focus { box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25); }
-        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.75); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; color: white; text-align: center; }
-        .loading-overlay p { margin-top: 15px; font-size: 1.1rem; }
-        .spinner { border: 5px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top-color: var(--accent-color); width: 50px; height: 50px; animation: spin 1s linear infinite; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 6px; color: white; font-weight: 600; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); display: flex; align-items: center; z-index: 1001; transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out; transform: translateX(120%); opacity: 0; min-width: 250px; }
-        .notification.show { transform: translateX(0); opacity: 1; } .notification i { margin-right: 12px; font-size: 1.3rem; }
-        .notification.success { background-color: var(--success-color); } .notification.error { background-color: var(--error-color); } .notification.warning { background-color: var(--warning-color); color: #333; } .notification.info { background-color: var(--info-color); }
-        .tooltip { position: relative; display: inline-block; margin-left: 8px; color: var(--info-color); cursor: help; }
-        .tooltip .tooltip-text { visibility: hidden; width: 280px; background-color: #333; color: white; text-align: left; border-radius: 4px; padding: 10px 12px; position: absolute; z-index: 1; bottom: 130%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out; font-weight: normal; font-size: 0.85rem; line-height: 1.5; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25); pointer-events: none; }
-        .tooltip .tooltip-text::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #333 transparent transparent transparent; }
-        .tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
-        footer { text-align: center; padding: 1.5rem; margin-top: 3rem; color: #6c757d; font-size: 0.9rem; border-top: 1px solid var(--border-color); } footer p { margin-bottom: 0.5rem; }
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.6); animation: fadeIn 0.3s ease-out; } @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-content { background-color: #fefefe; margin: 3% auto; padding: 25px 30px; border-radius: 8px; box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3); width: 85%; max-width: 1100px; max-height: 90vh; display: flex; flex-direction: column; animation: slideIn 0.3s ease-out; } @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
-        .modal-header h2 { margin: 0; border: none; padding: 0; font-size: 1.5rem; }
-        .close { color: #aaa; font-size: 32px; font-weight: bold; cursor: pointer; transition: color 0.2s ease; line-height: 1; } .close:hover, .close:focus { color: #333; text-decoration: none; }
-        .document-area { background-color: #fff; padding: 25px; border: 1px solid var(--border-color); border-radius: 4px; font-family: 'Microsoft JhengHei', 'Noto Sans TC', sans-serif; white-space: pre-wrap; line-height: 1.8; overflow-y: auto; flex-grow: 1; margin-bottom: 20px; font-size: 1rem; }
-        .document-buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border-color); }
-        @media print { body { background-color: white; } body * { visibility: hidden; } .modal, .modal *, .document-area, .document-area * { visibility: visible; } .modal { position: absolute; left: 0; top: 0; width: 100%; height: auto; margin: 0; padding: 0; overflow: visible; background-color: white; box-shadow: none; border: none; animation: none; } .modal-content { width: 100%; max-width: 100%; margin: 0; padding: 20px; box-shadow: none; border: none; max-height: none; animation: none; } .modal-header, .document-buttons, .close { display: none !important; } .document-area { border: none; padding: 0; margin: 0; white-space: pre-wrap !important; overflow: visible; background-color: white; font-size: 12pt; line-height: 1.6; } header, footer, .container > .card:not(.modal), .debug-panel, .notification, .loading-overlay { display: none; } }
-        .debug-panel { position: fixed; bottom: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.85); color: #0f0; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; max-width: 350px; max-height: 250px; overflow: auto; z-index: 9999; display: none; border-radius: 4px; box-shadow: 0 0 10px rgba(0, 255, 0, 0.3); } .debug-panel.active { display: block; } .debug-panel .log-entry { border-bottom: 1px dotted #333; padding: 2px 0; word-break: break-all; } .debug-panel .log-entry:last-child { border-bottom: none; } .debug-panel .log-entry.error { color: #f88; } .debug-panel .log-entry.warning { color: #ff8; } .debug-panel .log-entry.request { color: #8bf; } .debug-panel .log-entry.response { color: #8f8; }
-        @media (max-width: 768px) { .container { padding: 10px; margin-top: 10px; } .card { padding: 1rem; } h2 { font-size: 1.4rem; } .form-row { flex-direction: column; gap: 0; } .form-col { width: 100%; margin-bottom: 1.2rem; } .form-col:last-child { margin-bottom: 0; } .buttons-container { flex-direction: column; align-items: stretch; gap: 15px; } .buttons-container > div:first-child { flex-direction: column; gap: 10px; } .buttons-container button, .buttons-container .btn-uniform { width: 100% !important; min-width: auto !important; margin: 0 !important; } .modal-content { width: 95%; margin: 5% auto; padding: 15px 20px; max-height: 85vh; } .document-buttons { justify-content: center; } .document-buttons button { flex-grow: 1; min-width: 100px; } #aiSummarizeButtonContainer { text-align: center; } #aiSummarizeBtn { width: auto; display: inline-block; } }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 8px 8px 0 0;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--accent-color);
+            font-weight: 600;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-size: 0.95rem;
+        }
+
+        .required:after {
+            content: " *";
+            color: var(--error-color);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background-color: #fff;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(212, 167, 96, 0.25);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-section {
+            background-color: var(--secondary-color);
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-col {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        button,
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s, opacity 0.3s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            line-height: 1.5;
+            text-decoration: none;
+        }
+
+        button:active,
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        button i,
+        .btn i {
+            margin-right: 8px;
+        }
+
+        button:disabled,
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #0f2a53;
+        }
+
+        .secondary-btn,
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .secondary-btn:hover:not(:disabled),
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #5a6268;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+
+        .btn-info {
+            background-color: var(--info-color);
+            color: white;
+        }
+
+        .btn-info:hover:not(:disabled) {
+            background-color: #138496;
+        }
+
+        .btn-accent {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+        }
+
+        .btn-accent:hover:not(:disabled) {
+            background-color: #c89a50;
+        }
+
+        .btn-accent:disabled {
+            background-color: #e0c8a0;
+            color: #a0a0a0;
+        }
+
+        #aiSummarizeBtn {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+
+        #aiSummarizeButtonContainer {
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .buttons-container>div:first-child {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        @media (min-width: 769px) {
+            .btn-uniform {
+                min-width: 120px;
+                height: 44px;
+                padding: 10px 15px !important;
+                font-size: 0.95rem !important;
+                white-space: nowrap !important;
+            }
+
+            .buttons-container {
+                align-items: center;
+            }
+        }
+
+        .document-buttons .btn-uniform,
+        .document-buttons button {
+            min-width: 120px;
+            height: 40px;
+            padding: 8px 15px !important;
+            font-size: 0.9rem !important;
+            white-space: nowrap !important;
+        }
+
+        .helper-text {
+            display: block;
+            margin-top: 6px;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 6px;
+            display: none;
+            font-weight: 500;
+        }
+
+        input.error,
+        textarea.error,
+        select.error {
+            border-color: var(--error-color) !important;
+            background-color: #fff3f3;
+        }
+
+        input.error:focus,
+        textarea.error:focus,
+        select.error:focus {
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            color: white;
+            text-align: center;
+        }
+
+        .loading-overlay p {
+            margin-top: 15px;
+            font-size: 1.1rem;
+        }
+
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            z-index: 1001;
+            transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+            transform: translateX(120%);
+            opacity: 0;
+            min-width: 250px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification i {
+            margin-right: 12px;
+            font-size: 1.3rem;
+        }
+
+        .notification.success {
+            background-color: var(--success-color);
+        }
+
+        .notification.error {
+            background-color: var(--error-color);
+        }
+
+        .notification.warning {
+            background-color: var(--warning-color);
+            color: #333;
+        }
+
+        .notification.info {
+            background-color: var(--info-color);
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 8px;
+            color: var(--info-color);
+            cursor: help;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 280px;
+            background-color: #333;
+            color: white;
+            text-align: left;
+            border-radius: 4px;
+            padding: 10px 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            font-weight: normal;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+            pointer-events: none;
+        }
+
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 3rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 3% auto;
+            padding: 25px 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+            width: 85%;
+            max-width: 1100px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            border: none;
+            padding: 0;
+            font-size: 1.5rem;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            line-height: 1;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .document-area {
+            background-color: #fff;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: 'Microsoft JhengHei', 'Noto Sans TC', sans-serif;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            overflow-y: auto;
+            flex-grow: 1;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .document-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media print {
+            body {
+                background-color: white;
+            }
+
+            body * {
+                visibility: hidden;
+            }
+
+            .modal,
+            .modal *,
+            .document-area,
+            .document-area * {
+                visibility: visible;
+            }
+
+            .modal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 0;
+                overflow: visible;
+                background-color: white;
+                box-shadow: none;
+                border: none;
+                animation: none;
+            }
+
+            .modal-content {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 20px;
+                box-shadow: none;
+                border: none;
+                max-height: none;
+                animation: none;
+            }
+
+            .modal-header,
+            .document-buttons,
+            .close {
+                display: none !important;
+            }
+
+            .document-area {
+                border: none;
+                padding: 0;
+                margin: 0;
+                white-space: pre-wrap !important;
+                overflow: visible;
+                background-color: white;
+                font-size: 12pt;
+                line-height: 1.6;
+            }
+
+            header,
+            footer,
+            .container>.card:not(.modal),
+            .debug-panel,
+            .notification,
+            .loading-overlay {
+                display: none;
+            }
+        }
+
+        .debug-panel {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.85);
+            color: #0f0;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            max-width: 350px;
+            max-height: 250px;
+            overflow: auto;
+            z-index: 9999;
+            display: none;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .debug-panel.active {
+            display: block;
+        }
+
+        .debug-panel .log-entry {
+            border-bottom: 1px dotted #333;
+            padding: 2px 0;
+            word-break: break-all;
+        }
+
+        .debug-panel .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .debug-panel .log-entry.error {
+            color: #f88;
+        }
+
+        .debug-panel .log-entry.warning {
+            color: #ff8;
+        }
+
+        .debug-panel .log-entry.request {
+            color: #8bf;
+        }
+
+        .debug-panel .log-entry.response {
+            color: #8f8;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                margin-top: 10px;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            h2 {
+                font-size: 1.4rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .form-col {
+                width: 100%;
+                margin-bottom: 1.2rem;
+            }
+
+            .form-col:last-child {
+                margin-bottom: 0;
+            }
+
+            .buttons-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+
+            .buttons-container>div:first-child {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .buttons-container button,
+            .buttons-container .btn-uniform {
+                width: 100% !important;
+                min-width: auto !important;
+                margin: 0 !important;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+                padding: 15px 20px;
+                max-height: 85vh;
+            }
+
+            .document-buttons {
+                justify-content: center;
+            }
+
+            .document-buttons button {
+                flex-grow: 1;
+                min-width: 100px;
+            }
+
+            #aiSummarizeButtonContainer {
+                text-align: center;
+            }
+
+            #aiSummarizeBtn {
+                width: auto;
+                display: inline-block;
+            }
+        }
 
         /* Style for the custom case type input */
         #caseTypeCustom {
-            margin-top: 10px; /* Add some space above */
-            display: none; /* Initially hidden */
+            margin-top: 10px;
+            /* Add some space above */
+            display: none;
+            /* Initially hidden */
         }
     </style>
 </head>
+
 <body>
     <header>
         <h1>民事訴訟書狀生成系統</h1>
@@ -139,7 +812,8 @@
                                     <option value="custom">自行輸入...</option> <!-- ADDED: Custom option -->
                                 </select>
                                 <!-- ADDED: Input field for custom type -->
-                                <input type="text" id="caseTypeCustom" name="caseTypeCustom" placeholder="請輸入自訂訴狀類型" style="display: none; margin-top: 10px;">
+                                <input type="text" id="caseTypeCustom" name="caseTypeCustom" placeholder="請輸入自訂訴狀類型"
+                                    style="display: none; margin-top: 10px;">
                                 <div class="error-message" id="caseType-error">請選擇或輸入訴狀類型</div>
                                 <div class="error-message" id="caseTypeCustom-error">請輸入自訂訴狀類型</div>
                             </div>
@@ -166,10 +840,10 @@
                                     <option value="臺灣彰化地方法院">臺灣彰化地方法院</option>
                                     <option value="臺灣臺南地方法院">臺灣臺南地方法院</option>
                                     <option value="臺灣高雄地方法院">臺灣高雄地方法院</option>
-                                     <option value="臺灣橋頭地方法院">臺灣橋頭地方法院</option>
+                                    <option value="臺灣橋頭地方法院">臺灣橋頭地方法院</option>
                                     <option value="其他法院">其他法院 (請於訴狀內容確認)</option>
                                 </select>
-                                 <div class="error-message" id="courtName-error">請選擇或確認法院名稱</div>
+                                <div class="error-message" id="courtName-error">請選擇或確認法院名稱</div>
                             </div>
                         </div>
                         <div class="form-col">
@@ -187,7 +861,8 @@
                     <h3>當事人資料</h3>
                     <div class="form-group">
                         <label for="plaintiff" class="required">原告資料
-                            <span class="tooltip"><i class="fas fa-question-circle"></i><span class="tooltip-text">請填寫原告完整姓名、身分證字號（或公司統編）、地址。若有多位原告，請換行分隔。法定代理人亦請註明。</span></span>
+                            <span class="tooltip"><i class="fas fa-question-circle"></i><span
+                                    class="tooltip-text">請填寫原告完整姓名、身分證字號（或公司統編）、地址。若有多位原告，請換行分隔。法定代理人亦請註明。</span></span>
                         </label>
                         <textarea id="plaintiff" name="plaintiff" placeholder="例：
 原告 林大明
@@ -204,7 +879,8 @@
                     </div>
                     <div class="form-group">
                         <label for="defendant" class="required">被告資料
-                             <span class="tooltip"><i class="fas fa-question-circle"></i><span class="tooltip-text">請填寫被告完整姓名、身分證字號（或公司統編）、地址。若有多位被告，請換行分隔。</span></span>
+                            <span class="tooltip"><i class="fas fa-question-circle"></i><span
+                                    class="tooltip-text">請填寫被告完整姓名、身分證字號（或公司統編）、地址。若有多位被告，請換行分隔。</span></span>
                         </label>
                         <textarea id="defendant" name="defendant" placeholder="例：
 被告 王小華
@@ -225,20 +901,25 @@
                     <h3>案件內容</h3>
                     <div class="form-group">
                         <label for="caseTitle" class="required">案件案由</label>
-                        <input type="text" id="caseTitle" name="caseTitle" placeholder="例：請求返還借款、請求給付貨款、確認所有權存在等" required>
+                        <input type="text" id="caseTitle" name="caseTitle" placeholder="例：請求返還借款、請求給付貨款、確認所有權存在等"
+                            required>
                         <div class="error-message" id="caseTitle-error">請填寫案件案由</div>
                     </div>
                     <div class="form-group">
                         <label for="caseProcess">案件詳細經過 (選填)
-                            <span class="tooltip"><i class="fas fa-question-circle"></i><span class="tooltip-text">若需 AI 協助統整案情摘要或事實，請在此詳細描述案件的完整過程、時間、地點、人物、對話、事件等細節。點選下方按鈕觸發 AI。</span></span>
+                            <span class="tooltip"><i class="fas fa-question-circle"></i><span class="tooltip-text">若需 AI
+                                    協助統整案情摘要或事實，請在此詳細描述案件的完整過程、時間、地點、人物、對話、事件等細節。點選下方按鈕觸發 AI。</span></span>
                         </label>
-                        <textarea id="caseProcess" name="caseProcess" rows="6" placeholder="請詳細描述案件從發生到現在的完整經過..."></textarea>
-                        <div id="aiSummarizeButtonContainer"><!-- AI button will be dynamically added here by JS --></div>
+                        <textarea id="caseProcess" name="caseProcess" rows="6"
+                            placeholder="請詳細描述案件從發生到現在的完整經過..."></textarea>
+                        <div id="aiSummarizeButtonContainer"><!-- AI button will be dynamically added here by JS -->
+                        </div>
                         <div class="error-message" id="caseProcess-error"></div>
                     </div>
                     <div class="form-group">
                         <label for="requests" class="required">訴之聲明 (請求事項)
-                            <span class="tooltip"><i class="fas fa-question-circle"></i><span class="tooltip-text">請條列您希望法院判決的具體內容，應明確、可執行。例如：被告應給付原告...元、確認...契約無效等。利息計算方式也請寫明。</span></span>
+                            <span class="tooltip"><i class="fas fa-question-circle"></i><span
+                                    class="tooltip-text">請條列您希望法院判決的具體內容，應明確、可執行。例如：被告應給付原告...元、確認...契約無效等。利息計算方式也請寫明。</span></span>
                         </label>
                         <textarea id="requests" name="requests" rows="5" placeholder="例：
 一、被告應給付原告新台幣○○萬元整。
@@ -249,7 +930,8 @@
                     </div>
                     <div class="form-group">
                         <label for="facts" class="required">事實及理由
-                            <span class="tooltip"><i class="fas fa-question-circle"></i><span class="tooltip-text">請依時間順序，分點敘述支持您訴之聲明的客觀事實與法律理由。每點應簡潔明瞭，至少需包含3個關鍵事實點。可引用證據（如：詳參原證1）。</span></span>
+                            <span class="tooltip"><i class="fas fa-question-circle"></i><span
+                                    class="tooltip-text">請依時間順序，分點敘述支持您訴之聲明的客觀事實與法律理由。每點應簡潔明瞭，至少需包含3個關鍵事實點。可引用證據（如：詳參原證1）。</span></span>
                         </label>
                         <textarea id="facts" name="facts" rows="8" placeholder="例：
 一、原告於民國113年○月○日借款新台幣○○萬元予被告，約定清償日為113年○月○日（詳參原證1：借據影本）。
@@ -259,7 +941,8 @@
                     </div>
                     <div class="form-group">
                         <label for="evidence" class="required">證據名稱及件數
-                            <span class="tooltip"><i class="fas fa-question-circle"></i><span class="tooltip-text">請條列您提出的所有證據文件名稱及其件數。例如：原證1：借據影本乙份。若為被告，則用「被證」。</span></span>
+                            <span class="tooltip"><i class="fas fa-question-circle"></i><span
+                                    class="tooltip-text">請條列您提出的所有證據文件名稱及其件數。例如：原證1：借據影本乙份。若為被告，則用「被證」。</span></span>
                         </label>
                         <textarea id="evidence" name="evidence" rows="4" placeholder="例：
 原證1：借據影本乙份
@@ -270,14 +953,15 @@
                     </div>
                     <div class="form-group">
                         <label for="laws">適用法條 (選填)
-                            <span class="tooltip"><i class="fas fa-question-circle"></i><span class="tooltip-text">請列出您認為適用的主要法條，每條一行。</span></span>
+                            <span class="tooltip"><i class="fas fa-question-circle"></i><span
+                                    class="tooltip-text">請列出您認為適用的主要法條，每條一行。</span></span>
                         </label>
                         <textarea id="laws" name="laws" rows="3" placeholder="例：
 民法第474條
 民法第478條
 民法第229條第1項
 民事訴訟法第78條"></textarea>
-                         <span class="helper-text">可不填，由 AI 統整或生成訴狀時判斷</span>
+                        <span class="helper-text">可不填，由 AI 統整或生成訴狀時判斷</span>
                     </div>
                     <div class="form-group">
                         <label for="precedents">相關判決 (選填)</label>
@@ -318,19 +1002,29 @@
     <!-- Modal for Displaying Generated Document -->
     <div id="documentModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"> <h2>生成的訴狀預覽</h2> <span class="close" title="關閉">×</span> </div>
+            <div class="modal-header">
+                <h2>生成的訴狀預覽</h2> <span class="close" title="關閉">×</span>
+            </div>
             <div class="document-area" id="documentContent" aria-live="polite"></div>
             <div class="document-buttons">
-                <button id="copyBtn" class="secondary-btn btn-uniform" title="複製訴狀內容至剪貼簿"><i class="fas fa-copy"></i> 複製內容</button>
-                <button id="printBtn" class="secondary-btn btn-uniform" title="列印訴狀"><i class="fas fa-print"></i> 列印</button>
-                <button id="downloadBtn" class="secondary-btn btn-uniform" title="下載為 .txt 文字檔"><i class="fas fa-download"></i> 下載 (.txt)</button>
-                <button id="emailBtn" class="secondary-btn btn-uniform" title="將訴狀內容(模擬)寄送至您填寫的信箱"><i class="fas fa-envelope"></i> 寄送Email</button>
+                <button id="copyBtn" class="secondary-btn btn-uniform" title="複製訴狀內容至剪貼簿"><i class="fas fa-copy"></i>
+                    複製內容</button>
+                <button id="printBtn" class="secondary-btn btn-uniform" title="列印訴狀"><i class="fas fa-print"></i>
+                    列印</button>
+                <button id="downloadBtn" class="secondary-btn btn-uniform" title="下載為 .txt 文字檔"><i
+                        class="fas fa-download"></i> 下載 (.txt)</button>
+                <button id="emailBtn" class="secondary-btn btn-uniform" title="將訴狀內容(模擬)寄送至您填寫的信箱"><i
+                        class="fas fa-envelope"></i> 寄送Email</button>
             </div>
         </div>
     </div>
 
     <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay"> <div class="spinner"></div> <p>正在處理中，請稍候...</p> <p id="estimatedTime"></p> </div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>正在處理中，請稍候...</p>
+        <p id="estimatedTime"></p>
+    </div>
     <!-- Notification Area -->
     <div class="notification" id="notification"></div>
     <!-- Debug Panel -->
@@ -343,7 +1037,7 @@
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // --- DOM Element References ---
             const form = document.getElementById('legalDocForm');
             const loadingOverlay = document.getElementById('loadingOverlay');
@@ -405,15 +1099,15 @@
                 const caseTypeVal = caseTypeSelect.value;
                 const caseTypeCustomVal = caseTypeCustomInput.value.trim();
                 if (!caseTypeVal) { // No selection made
-                     showError('caseType', '請選擇或輸入訴狀類型');
-                     log(`驗證失敗: caseType - 未選擇`, 'validation');
-                     isValid = false;
-                 } else if (caseTypeVal === 'custom' && !caseTypeCustomVal) { // Custom selected but input empty
-                     showError('caseTypeCustom', '請輸入自訂訴狀類型');
-                     log(`驗證失敗: caseTypeCustom - 自訂類型為空`, 'validation');
-                     isValid = false;
-                 }
-                 // --- END MODIFIED Case Type Validation ---
+                    showError('caseType', '請選擇或輸入訴狀類型');
+                    log(`驗證失敗: caseType - 未選擇`, 'validation');
+                    isValid = false;
+                } else if (caseTypeVal === 'custom' && !caseTypeCustomVal) { // Custom selected but input empty
+                    showError('caseTypeCustom', '請輸入自訂訴狀類型');
+                    log(`驗證失敗: caseTypeCustom - 自訂類型為空`, 'validation');
+                    isValid = false;
+                }
+                // --- END MODIFIED Case Type Validation ---
 
                 const factsValue = document.getElementById('facts').value.trim(); if (factsValue && factsValue.split('\n').filter(line => line.trim()).length < 3) { showError('facts', '事實及理由請至少填寫3點'); log(`驗證失敗: facts - 未滿3點`, 'validation'); isValid = false; }
                 const emailValue = document.getElementById('email').value.trim(); if (emailValue && !validateEmail(emailValue)) { showError('email', '請填寫有效的電子郵件格式'); log(`驗證失敗: email - 格式錯誤`, 'validation'); isValid = false; }
@@ -422,8 +1116,8 @@
             }
 
             // --- Data Handling & Processing ---
-            function extractActionInput(responseData) { try { if (typeof responseData === 'string') { try { responseData = JSON.parse(responseData); } catch (e) {} } if (typeof responseData === 'object' && responseData !== null) { if (responseData.action === "Final Answer" && responseData.action_input) { log("提取自 action_input", "process"); return responseData.action_input; } if (responseData.output) { log("提取自 output 屬性", "process"); return responseData.output; } if (responseData.text) { log("提取自 text 屬性", "process"); return responseData.text; } } if(typeof responseData === 'string') { log("作為原始字串處理", "process"); return responseData; } log("未找到已知輸出鍵，將物件字串化", "process"); return JSON.stringify(responseData, null, 2); } catch (e) { log(`提取 action_input/output/text 時出錯: ${e.message}`, 'error'); return responseData; } }
-            function processLegalDocumentText(data) { if (!data) return ''; let processedText = extractActionInput(data); log(`處理前文本類型: ${typeof processedText}`, 'debug'); if (typeof processedText === 'string') { processedText = processedText .replace(/\\n/g, '\n') .replace(/\\"/g, '"') .replace(/\\t/g, '\t') .replace(/\\\\/g, '\\'); processedText = processedText.replace(/^```(json|text|markdown)?\s*/gm, '').replace(/```\s*$/gm, ''); log("字串處理完成", 'debug'); } else { log("輸入非字串，無法進行字串處理", 'debug'); } return String(processedText || '').trim(); }
+            function extractActionInput(responseData) { try { if (typeof responseData === 'string') { try { responseData = JSON.parse(responseData); } catch (e) { } } if (typeof responseData === 'object' && responseData !== null) { if (responseData.action === "Final Answer" && responseData.action_input) { log("提取自 action_input", "process"); return responseData.action_input; } if (responseData.output) { log("提取自 output 屬性", "process"); return responseData.output; } if (responseData.text) { log("提取自 text 屬性", "process"); return responseData.text; } } if (typeof responseData === 'string') { log("作為原始字串處理", "process"); return responseData; } log("未找到已知輸出鍵，將物件字串化", "process"); return JSON.stringify(responseData, null, 2); } catch (e) { log(`提取 action_input/output/text 時出錯: ${e.message}`, 'error'); return responseData; } }
+            function processLegalDocumentText(data) { if (!data) return ''; let processedText = extractActionInput(data); log(`處理前文本類型: ${typeof processedText}`, 'debug'); if (typeof processedText === 'string') { processedText = processedText.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t').replace(/\\\\/g, '\\'); processedText = processedText.replace(/^```(json|text|markdown)?\s*/gm, '').replace(/```\s*$/gm, ''); log("字串處理完成", 'debug'); } else { log("輸入非字串，無法進行字串處理", 'debug'); } return String(processedText || '').trim(); }
 
             // --- Local Storage ---
             function saveDocumentToLocalStorage(documentText) { try { const dataToSave = { content: documentText, timestamp: new Date().toISOString() }; localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave)); log('訴狀已保存到本地存儲', 'storage'); } catch (e) { log(`無法保存到本地存儲: ${e.message}`, 'error'); showNotification('無法保存本次結果至瀏覽器暫存', 'warning'); } }
@@ -433,31 +1127,31 @@
             function createButton(id, text, icon, styleClass, clickHandler, isSubmit = false, isUniform = true) { const button = document.createElement('button'); button.id = id; button.type = isSubmit ? 'submit' : 'button'; button.className = `btn ${styleClass}` + (isUniform ? ' btn-uniform' : ''); button.innerHTML = `<i class="fas fa-${icon}"></i> ${text}`; if (clickHandler) { button.addEventListener('click', clickHandler); } return button; }
             function setupButtons() { buttonsContainer.innerHTML = ''; const leftButtonGroup = document.createElement('div'); const demoButton = createButton('demoBtn', '填入示範', 'magic', 'secondary-btn', fillDemoData); const testButton = createButton('testBtn', '本機測試', 'vial', 'btn-success', runTest); const resetButton = createButton('resetBtn', '清除重填', 'undo', 'btn-danger', resetForm); leftButtonGroup.appendChild(demoButton); leftButtonGroup.appendChild(testButton); leftButtonGroup.appendChild(resetButton); const savedData = loadDocumentFromLocalStorage(); if (savedData && savedData.timestamp) { const timestamp = new Date(savedData.timestamp); const now = new Date(); const diffMinutes = Math.floor((now - timestamp) / (1000 * 60)); if (diffMinutes < 60) { const restoreButton = createButton('restoreBtn', '恢復上次', 'history', 'btn-info', () => { if (savedData.content) { const processedText = processLegalDocumentText(savedData.content); documentContent.textContent = processedText; modal.style.display = 'block'; log(`從本地存儲恢復訴狀 (生成於 ${diffMinutes} 分鐘前)`, 'storage'); showNotification('已恢復上次生成的訴狀內容', 'success'); } else { showNotification('找不到上次的內容', 'warning'); } }); leftButtonGroup.appendChild(restoreButton); log(`發現 ${diffMinutes} 分鐘前生成的本地存儲數據`, 'info'); } } const submitButton = createButton('submitBtn', '生成訴狀', 'file-alt', 'btn-primary', null, true); buttonsContainer.appendChild(leftButtonGroup); buttonsContainer.appendChild(submitButton); form.removeEventListener('submit', handleFormSubmit); form.addEventListener('submit', handleFormSubmit); }
 
-             // --- Button Action Handlers ---
+            // --- Button Action Handlers ---
             function fillDemoData() { log('正在填入示範數據...', 'ui'); clearErrors(); caseTypeSelect.value = '民事起訴狀'; handleCaseTypeChange(); /* Trigger change to hide custom input */ document.getElementById('courtName').value = '臺灣臺北地方法院'; document.getElementById('plaintiff').value = '林大明\n身分證字號：A123456789\n住址：臺北市信義區市府路1號\n電話：0911-111-111'; document.getElementById('defendant').value = '王小華\n身分證字號：B987654321\n住址：新北市板橋區縣民大道二段7號\n電話：0922-222-222'; document.getElementById('caseTitle').value = '請求返還借款'; document.getElementById('caseProcess').value = '被告王小華於民國113年2月1日向原告林大明開口借款新台幣十萬元整，聲稱家中有急用，約定同年5月1日還款。原告基於多年情誼，於113年2月5日以現金交付予被告。然屆至清償期，被告並未還款。原告於6月1日以LINE訊息催討，被告已讀不回。後續多次以電話聯繫，被告均未接聽或掛斷。'; document.getElementById('requests').value = '一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。'; document.getElementById('facts').value = '一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條等相關規定提起本訴，請求判如訴之聲明。'; document.getElementById('evidence').value = '原證1：LINE對話紀錄截圖乙份\n原證2：原告113年2月提款紀錄（佐證資金來源）'; document.getElementById('laws').value = '民法第474條\n民法第478條\n民法第229條第1項\n民法第233條第1項'; document.getElementById('precedents').value = ''; document.getElementById('email').value = 'demo.user@example.com'; document.getElementById('phone').value = '0912-345678'; updateAiButtonState(); showNotification('已填入示範數據', 'success'); }
             function runTest() { fillDemoData(); log('開始本機測試流程...', 'test'); showNotification('使用示範數據進行本機測試...', 'info'); showLoading("模擬本機生成中...", 2); setTimeout(() => { hideLoading(); const testResponse = { output: `\n民事起訴狀（測試範本）\n案　　號： （法院自動編列）\n股　　別： （法院自動編列）\n\n原　　告　林大明\n　　　　　身分證字號：A123456789\n　　　　　住址：臺北市信義區市府路1號\n　　　　　電話：0911-111-111\n\n被　　告　王小華\n　　　　　身分證字號：B987654321\n　　　　　住址：新北市板橋區縣民大道二段7號\n　　　　　電話：0922-222-222\n\n為請求返還借款事件，依法起訴事：\n\n　　訴之聲明\n一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。\n\n　　事實及理由\n一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。（原告可提出113年2月提款紀錄佐證資金流動，詳參原證2）\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條、第229條第1項、第233條第1項等相關規定提起本訴，狀請 鈞院鑒核，賜判如訴之聲明，以維權益。\n\n　　證據\n原證1：LINE對話紀錄截圖乙份。\n原證2：原告113年2月提款紀錄影本乙份。\n\n謹　狀\n臺灣臺北地方法院民事庭　公鑒\n\n中華民國 ${new Date().getFullYear() - 1911} 年 ${new Date().getMonth() + 1} 月 ${new Date().getDate()} 日\n\n具狀人　林大明 （簽名或蓋章）\n` }; const finalOutput = processLegalDocumentText(testResponse); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput; modal.style.display = 'block'; log('本機測試訴狀已生成並顯示', 'test'); showNotification('本機測試訴狀已生成！', 'success'); setupButtons(); }, 1500); }
             function resetForm() { if (confirm('您確定要清除所有已填寫的欄位嗎？')) { log('執行表單重置', 'ui'); form.reset(); clearErrors(); handleCaseTypeChange(); /* Ensure custom field is hidden */ updateAiButtonState(); showNotification('表單欄位已清除', 'info'); } }
 
             // --- AI Summarize Button Logic ---
-            function updateAiButtonState() { if (!caseProcessTextarea || !aiSummarizeButtonContainer) return; const processValue = caseProcessTextarea.value.trim(); aiSummarizeButtonContainer.innerHTML = ''; if (processValue) { const aiButton = createButton( 'aiSummarizeBtn', 'AI 統整', 'wand-magic-sparkles', 'btn-accent', triggerAiSummarize, false, false ); aiSummarizeButtonContainer.appendChild(aiButton); } }
+            function updateAiButtonState() { if (!caseProcessTextarea || !aiSummarizeButtonContainer) return; const processValue = caseProcessTextarea.value.trim(); aiSummarizeButtonContainer.innerHTML = ''; if (processValue) { const aiButton = createButton('aiSummarizeBtn', 'AI 統整', 'wand-magic-sparkles', 'btn-accent', triggerAiSummarize, false, false); aiSummarizeButtonContainer.appendChild(aiButton); } }
 
             // --- Helper Function to Populate Fields from AI JSON ---
             function populateFieldsFromAI(aiData) {
                 log("正在使用 AI 數據填充表單欄位", "ui");
                 const requestsTextarea = document.getElementById('requests'); const factsTextarea = document.getElementById('facts'); const lawsTextarea = document.getElementById('laws');
-                const formatList = (items, prefixType = 'number') => { if (!Array.isArray(items) || items.length === 0) return ''; let hasPrefix = false; if (items.length > 1) { const prefixRegex = /^[a-z\d一二三四五六七八九十]+[、\.\)]\s*/i; const firstPrefix = String(items[0]).match(prefixRegex); if (firstPrefix) { hasPrefix = items.every(item => String(item).startsWith(firstPrefix[0].substring(0,1))); } } return items.map((item, index) => { let currentItem = String(item).trim(); currentItem = currentItem.replace(/^[\d一二三四五六七八九十]+[、\.\)]\s*/, "").replace(/^[a-z][\.\)]\s*/i, "").replace(/^[-•*]\s*/, "").trim(); let prefix = ''; if (prefixType === 'number') { const chineseNumerals = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']; prefix = (index < chineseNumerals.length ? chineseNumerals[index] : (index + 1)) + '、'; } else if (prefixType === 'bullet') { prefix = '● '; } else { prefix = `${index + 1}. `; } return currentItem ? prefix + currentItem : ''; }).filter(item => item !== '').join('\n'); };
+                const formatList = (items, prefixType = 'number') => { if (!Array.isArray(items) || items.length === 0) return ''; let hasPrefix = false; if (items.length > 1) { const prefixRegex = /^[a-z\d一二三四五六七八九十]+[、\.\)]\s*/i; const firstPrefix = String(items[0]).match(prefixRegex); if (firstPrefix) { hasPrefix = items.every(item => String(item).startsWith(firstPrefix[0].substring(0, 1))); } } return items.map((item, index) => { let currentItem = String(item).trim(); currentItem = currentItem.replace(/^[\d一二三四五六七八九十]+[、\.\)]\s*/, "").replace(/^[a-z][\.\)]\s*/i, "").replace(/^[-•*]\s*/, "").trim(); let prefix = ''; if (prefixType === 'number') { const chineseNumerals = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']; prefix = (index < chineseNumerals.length ? chineseNumerals[index] : (index + 1)) + '、'; } else if (prefixType === 'bullet') { prefix = '● '; } else { prefix = `${index + 1}. `; } return currentItem ? prefix + currentItem : ''; }).filter(item => item !== '').join('\n'); };
                 if (requestsTextarea && aiData.claims) { requestsTextarea.value = formatList(aiData.claims, 'number'); log(`填充 '請求事項' ${aiData.claims.length} 項`, "ui"); } else if (requestsTextarea) { requestsTextarea.value = ''; log(`未收到 AI claims 數據，清空 '請求事項'`, "ui"); }
                 if (factsTextarea && aiData.facts) { factsTextarea.value = formatList(aiData.facts, 'number'); log(`填充 '事實及理由' ${aiData.facts.length} 項`, "ui"); } else if (factsTextarea) { factsTextarea.value = ''; log(`未收到 AI facts 數據，清空 '事實及理由'`, "ui"); }
                 if (lawsTextarea && aiData.laws) { lawsTextarea.value = formatList(aiData.laws, 'bullet'); log(`填充 '適用法條' ${aiData.laws.length} 項`, "ui"); } else if (lawsTextarea) { lawsTextarea.value = ''; log(`未收到 AI laws 數據，清空 '適用法條'`, "ui"); }
             }
 
 
-            // --- triggerAiSummarize Function (Handles sending Type+Title+Process & receiving JSON) ---
+            // --- *** triggerAiSummarize Function (Handles sending Type+Title+Process & receiving JSON) *** ---
             async function triggerAiSummarize() {
                 // 0. Clear previous errors
                 clearErrors();
 
-                // 1. Get and Validate Case Type (** MODIFIED **)
+                // 1. Get and Validate Case Type
                 const caseTypeVal = getCaseTypeValue(); // Use helper function
                 if (!caseTypeVal) {
                     showNotification('請選擇或輸入「訴狀類型」', 'warning');
@@ -465,8 +1159,8 @@
                         showError('caseTypeCustom', '請輸入自訂訴狀類型');
                         caseTypeCustomInput?.focus();
                     } else {
-                         showError('caseType', '請選擇訴狀類型');
-                         caseTypeSelect?.focus();
+                        showError('caseType', '請選擇訴狀類型');
+                        caseTypeSelect?.focus();
                     }
                     return; // Stop if type is missing
                 }
@@ -487,36 +1181,38 @@
                     caseProcessTextarea.focus();
                     return; // Stop if process is missing
                 }
+                // --- Clear errors only if all required inputs are present ---
+                clearErrors();
 
                 // 4. Check Webhook URL validity
-                if (!aiWebhookUrl || aiWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer') {
+                if (!aiWebhookUrl || aiWebhookUrl === 'YOUR_N8N_AI_WEBHOOK_URL_HERE') {
                     showNotification('AI 統整功能未設定或設定錯誤', 'error');
                     log('AI 統整失敗：Webhook URL 未設定或無效', 'error');
-                    showError('caseProcess', 'AI 功能設定錯誤'); // Show error on related field
+                    showError('caseProcess', 'AI 功能設定錯誤');
                     return;
                 }
 
                 // 5. Handle Button State
                 const aiButton = document.getElementById('aiSummarizeBtn');
                 let originalButtonHTML = '';
-                 if (aiButton) {
-                     originalButtonHTML = aiButton.innerHTML;
-                     aiButton.disabled = true;
-                     aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 統整中...';
-                 }
+                if (aiButton) {
+                    originalButtonHTML = aiButton.innerHTML;
+                    aiButton.disabled = true;
+                    aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 統整中...';
+                }
 
                 log('觸發 AI 統整，發送 類型+案由+經過 到 n8n...', 'request');
                 showNotification('正在請求 AI 統整，請稍候...', 'info');
 
                 try {
-                    // 6. Create Payload with all required fields (** MODIFIED **)
+                    // 6. Create Payload
                     const payload = {
-                        caseType: caseTypeVal,      // Include Case Type
-                        caseTitle: caseTitleText,   // Include Case Title
-                        caseProcess: processText    // Include Case Process
+                        caseType: caseTypeVal,
+                        caseTitle: caseTitleText,
+                        caseProcess: processText
                     };
                     log('發送到 AI Webhook 的 Payload:', 'debug');
-                    if(DEBUG_MODE) console.log("AI Payload:", JSON.stringify(payload, null, 2));
+                    if (DEBUG_MODE) console.log("AI Payload:", JSON.stringify(payload, null, 2));
 
                     // 7. Make Fetch Request
                     const response = await fetch(aiWebhookUrl, {
@@ -524,14 +1220,14 @@
                         headers: {
                             'Content-Type': 'application/json',
                             'X-User-Id': window.debugInfo.user || 'unknown',
-                            'X-Action': 'analyze-case-details' // More accurate action name
+                            'X-Action': 'analyze-case-details'
                         },
                         body: JSON.stringify(payload)
                     });
 
                     log(`AI 統整回應狀態: ${response.status}`, 'response');
 
-                    // 8. Handle Response
+                    // 8. Handle Response Status
                     if (!response.ok) {
                         let errorBody = await response.text();
                         log(`AI 伺服器錯誤回應內容: ${errorBody}`, 'error');
@@ -541,52 +1237,68 @@
                         throw new Error(errorMessage);
                     }
 
-                    // 9. Process structured JSON response (** MODIFIED **)
-                    const result = await response.json(); // Expecting { json: { claims: ..., facts: ..., laws: ... } }
-                    log('收到 AI 統整結果 (n8n Item Structure)', 'response');
-                    if (DEBUG_MODE) console.log('AI Result (Raw Item):', JSON.stringify(result, null, 2));
+                    // --- *** CORRECTED: Process response JSON directly *** ---
+                    const result = await response.json(); // result should be the direct JSON or array from n8n
+                    log('收到 AI 統整結果', 'response');
+                    if (DEBUG_MODE) console.log('AI Result (Raw):', JSON.stringify(result, null, 2));
 
-                    const aiData = result?.json; // Get the nested JSON data
+                    // --- Determine the correct data object (handles array or direct object response) ---
+                    let aiData;
+                    if (Array.isArray(result) && result.length > 0) {
+                        // If n8n returns an array of items (common), take the first one
+                        aiData = result[0];
+                        log('從回應陣列的第一個元素提取數據', 'process');
+                    } else if (typeof result === 'object' && result !== null && !Array.isArray(result)) {
+                        // If n8n somehow returns a single object directly (less common for webhook response)
+                        aiData = result;
+                        log('直接使用回應物件作為數據', 'process');
+                    } else {
+                        // Handle unexpected response format (e.g., empty array, null, non-object)
+                        showNotification('AI 回應格式無法識別或為空', 'error', 8000);
+                        log(`AI 回應格式非預期陣列或物件: ${typeof result}`, 'error');
+                        throw new Error('AI 回應格式無法識別'); // Throw error to be caught by finally block
+                    }
 
-                    if (!aiData) {
-                         showNotification('AI 回應格式錯誤，缺少預期的 json 結構', 'error', 8000);
-                         log('AI 回應缺少頂層 json 屬性', 'error');
+
+                    if (!aiData) { // Should not happen if the above logic is correct, but good safety check
+                        showNotification('AI 回應格式錯誤，無法提取有效數據', 'error', 8000);
+                        log('無法從回應中提取有效的 aiData 物件', 'error');
                     } else {
                         log('提取到的 AI 結構化數據:', 'response');
                         if (DEBUG_MODE) console.log('AI Data (Extracted):', JSON.stringify(aiData, null, 2));
 
-                        if (aiData.parseError) {
-                             showNotification(`AI 回應解析錯誤: ${aiData.parseError}`, 'error', 8000);
-                             log(`n8n 報告解析錯誤: ${aiData.parseError}`, 'error');
-                             if(aiData.rawOutput) { console.error("LLM Raw Output (解析失敗):", aiData.rawOutput); }
-                        } else if (aiData.warning) {
-                             showNotification(`AI 回應結構可能不完整: ${aiData.warning}`, 'warning', 7000);
-                             log(`n8n 報告結構警告: ${aiData.warning}`, 'warning');
-                             populateFieldsFromAI(aiData);
-                        } else if (aiData.claims && aiData.facts && aiData.laws) {
+                        // --- Now use aiData directly for checks and population ---
+                        if (aiData.parseError) { // Check for errors reported by n8n
+                            showNotification(`AI 回應解析錯誤: ${aiData.parseError}`, 'error', 8000);
+                            log(`n8n 報告解析錯誤: ${aiData.parseError}`, 'error');
+                            if (aiData.rawOutput) { console.error("LLM Raw Output (解析失敗):", aiData.rawOutput); }
+                        } else if (aiData.warning) { // Check for warnings reported by n8n
+                            showNotification(`AI 回應結構可能不完整: ${aiData.warning}`, 'warning', 7000);
+                            log(`n8n 報告結構警告: ${aiData.warning}`, 'warning');
                             populateFieldsFromAI(aiData);
+                        } else if (aiData.claims && aiData.facts && aiData.laws) { // Check for expected keys directly on aiData
+                            populateFieldsFromAI(aiData); // Call the helper function with the correct data
                             showNotification('AI 分析完成，已填入相關欄位！', 'success');
                         } else {
-                             showNotification('AI 回應成功，但缺少預期的 claims/facts/laws 數據', 'warning');
-                             log('AI 成功回應，但 json 物件內缺少預期鍵值', 'warning');
-                             // Maybe still try to populate what's available?
-                             populateFieldsFromAI(aiData); // Try populating even if incomplete
+                            showNotification('AI 回應成功，但缺少預期的 claims/facts/laws 數據', 'warning');
+                            log('AI 成功回應，但提取的數據物件內缺少預期鍵值', 'warning');
+                            populateFieldsFromAI(aiData); // Try populating even if incomplete
                         }
                     }
-                    // --- *** END MODIFIED RESPONSE HANDLING *** ---
+                    // --- *** END CORRECTED RESPONSE HANDLING *** ---
 
                 } catch (error) {
-                    // 10. Handle Errors
+                    // 9. Handle Errors
                     console.error('AI Summarize Fetch Error:', error);
                     log(`AI 統整請求失敗: ${error.message}`, 'error');
                     showNotification(`AI 統整失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
                     showError('caseProcess', `AI 統整失敗`);
                 } finally {
-                    // 11. Restore Button State
-                     if (aiButton) {
-                         aiButton.disabled = false;
-                         aiButton.innerHTML = originalButtonHTML;
-                     }
+                    // 10. Restore Button State
+                    if (aiButton) {
+                        aiButton.disabled = false;
+                        aiButton.innerHTML = originalButtonHTML; // Restore original button content
+                    }
                 }
             } // --- END of triggerAiSummarize Function ---
 
@@ -597,9 +1309,9 @@
                 if (!validateForm()) { showNotification('提交失敗，請檢查表單紅色標示的欄位', 'error'); return; }
 
                 // --- MODIFIED: Get correct case type value for submission ---
-                 const finalCaseType = getCaseTypeValue();
-                 log(`提交的訴狀類型: ${finalCaseType}`, 'data');
-                 // --- END MODIFIED ---
+                const finalCaseType = getCaseTypeValue();
+                log(`提交的訴狀類型: ${finalCaseType}`, 'data');
+                // --- END MODIFIED ---
 
                 const formData = {
                     caseType: finalCaseType, // Use the potentially custom value
@@ -613,73 +1325,74 @@
                 log('表單數據已收集完畢', 'data'); if (DEBUG_MODE) console.log("準備發送的數據:", JSON.stringify(formData, null, 2));
                 showLoading("正在生成訴狀，請稍候...", 45); let secondsLeft = 45; const timerInterval = setInterval(() => { secondsLeft--; if (secondsLeft > 0) { estimatedTimeP.textContent = `預計剩餘： ${secondsLeft} 秒`; } else { estimatedTimeP.textContent = `仍在處理中，請耐心等候...`; clearInterval(timerInterval); } }, 1000);
                 fetch(generateWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Request-ID': `gen-${Date.now()}-${Math.random().toString(16).substring(2, 8)}` }, body: JSON.stringify(formData) })
-                .then(async response => { clearInterval(timerInterval); log(`收到 n8n (生成) 回應，狀態: ${response.status}`, 'response'); if (!response.ok) { let errorBody = await response.text(); log(`伺服器錯誤回應內容: ${errorBody}`, 'error'); throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}. ${errorBody || '無詳細錯誤訊息'}`); } return response.text(); })
-                .then(text => { log("收到原始生成回應文本", 'debug'); if (DEBUG_MODE) console.log("Raw Response Text:", text); let data; try { data = JSON.parse(text); } catch (e) { log("生成回應不是有效的 JSON，將直接使用收到的文本", 'debug'); data = text; } return data; })
-                .then(data => { hideLoading(); log("收到最終生成回應數據", 'response'); if (DEBUG_MODE) console.log("Processed Response Data:", data); const finalOutput = processLegalDocumentText(data); log("最終訴狀文本已處理完成", 'process'); if (DEBUG_MODE) console.log("Final Output for Display:", finalOutput); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput || "未能生成內容，請檢查回應。"; modal.style.display = 'block'; showNotification('訴狀已成功生成！', 'success'); setupButtons(); })
-                .catch(error => { clearInterval(timerInterval); hideLoading(); console.error('Form Submission/Generation Error:', error); log(`生成請求失敗: ${error.message}`, 'error'); showNotification(`生成訴狀時發生錯誤：${error.message || '未知錯誤'}`, 'error', 8000); });
+                    .then(async response => { clearInterval(timerInterval); log(`收到 n8n (生成) 回應，狀態: ${response.status}`, 'response'); if (!response.ok) { let errorBody = await response.text(); log(`伺服器錯誤回應內容: ${errorBody}`, 'error'); throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}. ${errorBody || '無詳細錯誤訊息'}`); } return response.text(); })
+                    .then(text => { log("收到原始生成回應文本", 'debug'); if (DEBUG_MODE) console.log("Raw Response Text:", text); let data; try { data = JSON.parse(text); } catch (e) { log("生成回應不是有效的 JSON，將直接使用收到的文本", 'debug'); data = text; } return data; })
+                    .then(data => { hideLoading(); log("收到最終生成回應數據", 'response'); if (DEBUG_MODE) console.log("Processed Response Data:", data); const finalOutput = processLegalDocumentText(data); log("最終訴狀文本已處理完成", 'process'); if (DEBUG_MODE) console.log("Final Output for Display:", finalOutput); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput || "未能生成內容，請檢查回應。"; modal.style.display = 'block'; showNotification('訴狀已成功生成！', 'success'); setupButtons(); })
+                    .catch(error => { clearInterval(timerInterval); hideLoading(); console.error('Form Submission/Generation Error:', error); log(`生成請求失敗: ${error.message}`, 'error'); showNotification(`生成訴狀時發生錯誤：${error.message || '未知錯誤'}`, 'error', 8000); });
             }
 
             // --- Modal and Document Actions ---
             if (closeModalBtn) { closeModalBtn.addEventListener('click', () => modal.style.display = 'none'); }
             window.addEventListener('click', (event) => { if (event.target === modal) { modal.style.display = 'none'; } });
             window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && modal.style.display === 'block') { modal.style.display = 'none'; } });
-             // Copy Logic
-             if (copyBtn) { copyBtn.addEventListener('click', () => { const textToCopy = documentContent.textContent; if (!textToCopy) { showNotification('沒有內容可複製', 'warning'); return; } navigator.clipboard.writeText(textToCopy).then(() => { showNotification('訴狀內容已複製到剪貼簿', 'success'); log('內容已複製', 'action'); }).catch(err => { showNotification('複製失敗，瀏覽器可能不支援或未授權', 'error'); log(`複製失敗: ${err.message}`, 'error'); }); }); }
-             // Print Logic
-             if (printBtn) { printBtn.addEventListener('click', () => { log('觸發列印', 'action'); modal.classList.add('printing'); window.print(); setTimeout(() => modal.classList.remove('printing'), 500); }); }
-             // Download Logic
-             if (downloadBtn) { downloadBtn.addEventListener('click', () => { try { const text = documentContent.textContent; if (!text) { showNotification('沒有內容可下載', 'warning'); return; } const caseType = getCaseTypeValue() || '訴狀'; /* Use helper here too */ const today = new Date().toISOString().slice(0, 10); const filename = `${caseType}_${today}.txt`; const blob = new Blob([text], {type: 'text/plain;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); showNotification(`已下載文件：${filename}`, 'success'); log(`訴狀已下載為 ${filename}`, 'action'); } catch (e) { log(`下載失敗: ${e.message}`, 'error'); showNotification('下載文件時發生錯誤', 'error'); } }); }
-             // Email Logic (Simulation)
-             if (emailBtn) { emailBtn.addEventListener('click', () => { const userEmail = document.getElementById('email').value; const docText = documentContent.textContent; if (!userEmail || !validateEmail(userEmail)) { showNotification('請先在主表單填寫有效的電子郵件地址', 'warning'); showError('email', '請填寫有效的電子郵件以寄送'); return; } if (!docText) { showNotification('沒有訴狀內容可寄送', 'warning'); return; } log(`準備模擬發送郵件至 ${userEmail}`, 'action'); showNotification(`即將模擬發送訴狀至：${userEmail}`, 'info'); emailBtn.disabled = true; emailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 寄送中...'; setTimeout(() => { emailBtn.disabled = false; emailBtn.innerHTML = '<i class="fas fa-envelope"></i> 寄送Email'; showNotification(`訴狀已「模擬」發送至您的信箱：${userEmail}`, 'success'); log(`模擬郵件已發送至 ${userEmail}`, 'action'); }, 2500); }); }
+            // Copy Logic
+            if (copyBtn) { copyBtn.addEventListener('click', () => { const textToCopy = documentContent.textContent; if (!textToCopy) { showNotification('沒有內容可複製', 'warning'); return; } navigator.clipboard.writeText(textToCopy).then(() => { showNotification('訴狀內容已複製到剪貼簿', 'success'); log('內容已複製', 'action'); }).catch(err => { showNotification('複製失敗，瀏覽器可能不支援或未授權', 'error'); log(`複製失敗: ${err.message}`, 'error'); }); }); }
+            // Print Logic
+            if (printBtn) { printBtn.addEventListener('click', () => { log('觸發列印', 'action'); modal.classList.add('printing'); window.print(); setTimeout(() => modal.classList.remove('printing'), 500); }); }
+            // Download Logic
+            if (downloadBtn) { downloadBtn.addEventListener('click', () => { try { const text = documentContent.textContent; if (!text) { showNotification('沒有內容可下載', 'warning'); return; } const caseType = getCaseTypeValue() || '訴狀'; /* Use helper here too */ const today = new Date().toISOString().slice(0, 10); const filename = `${caseType}_${today}.txt`; const blob = new Blob([text], { type: 'text/plain;charset=utf-8' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); showNotification(`已下載文件：${filename}`, 'success'); log(`訴狀已下載為 ${filename}`, 'action'); } catch (e) { log(`下載失敗: ${e.message}`, 'error'); showNotification('下載文件時發生錯誤', 'error'); } }); }
+            // Email Logic (Simulation)
+            if (emailBtn) { emailBtn.addEventListener('click', () => { const userEmail = document.getElementById('email').value; const docText = documentContent.textContent; if (!userEmail || !validateEmail(userEmail)) { showNotification('請先在主表單填寫有效的電子郵件地址', 'warning'); showError('email', '請填寫有效的電子郵件以寄送'); return; } if (!docText) { showNotification('沒有訴狀內容可寄送', 'warning'); return; } log(`準備模擬發送郵件至 ${userEmail}`, 'action'); showNotification(`即將模擬發送訴狀至：${userEmail}`, 'info'); emailBtn.disabled = true; emailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 寄送中...'; setTimeout(() => { emailBtn.disabled = false; emailBtn.innerHTML = '<i class="fas fa-envelope"></i> 寄送Email'; showNotification(`訴狀已「模擬」發送至您的信箱：${userEmail}`, 'success'); log(`模擬郵件已發送至 ${userEmail}`, 'action'); }, 2500); }); }
 
 
             // --- Initialization ---
-             log(`系統初始化 - v${window.debugInfo.version}`, 'init');
-             setupButtons();
+            log(`系統初始化 - v${window.debugInfo.version}`, 'init');
+            setupButtons();
 
-             // --- MODIFIED: Add Event Listener for Case Type Change ---
-             if (caseTypeSelect) {
-                 caseTypeSelect.addEventListener('change', handleCaseTypeChange);
-                 // Initial check in case the page loads with 'custom' selected (e.g., browser refresh)
-                 handleCaseTypeChange();
-             }
-             // ---------------------------------------------------------
+            // --- MODIFIED: Add Event Listener for Case Type Change ---
+            if (caseTypeSelect) {
+                caseTypeSelect.addEventListener('change', handleCaseTypeChange);
+                // Initial check in case the page loads with 'custom' selected (e.g., browser refresh)
+                handleCaseTypeChange();
+            }
+            // ---------------------------------------------------------
 
-             if (caseProcessTextarea) { caseProcessTextarea.addEventListener('input', updateAiButtonState); updateAiButtonState(); }
-             else { log('未找到案件經過欄位 (caseProcess textarea)', 'warning'); }
-             document.addEventListener('keydown', (e) => { if (e.altKey && e.key === 'd') { debugPanel.classList.toggle('active'); log(`調試面板 ${debugPanel.classList.contains('active') ? '開啟' : '關閉'}`, 'ui'); e.preventDefault(); } });
-             showNotification('按下 Alt+D 可顯示/隱藏調試面板', 'info', 7000);
+            if (caseProcessTextarea) { caseProcessTextarea.addEventListener('input', updateAiButtonState); updateAiButtonState(); }
+            else { log('未找到案件經過欄位 (caseProcess textarea)', 'warning'); }
+            document.addEventListener('keydown', (e) => { if (e.altKey && e.key === 'd') { debugPanel.classList.toggle('active'); log(`調試面板 ${debugPanel.classList.contains('active') ? '開啟' : '關閉'}`, 'ui'); e.preventDefault(); } });
+            showNotification('按下 Alt+D 可顯示/隱藏調試面板', 'info', 7000);
 
 
-             // --- ADDED: Function to handle case type dropdown change ---
-             function handleCaseTypeChange() {
-                 if (!caseTypeSelect || !caseTypeCustomInput) return;
+            // --- ADDED: Function to handle case type dropdown change ---
+            function handleCaseTypeChange() {
+                if (!caseTypeSelect || !caseTypeCustomInput) return;
 
-                 const customError = document.getElementById('caseTypeCustom-error');
-                 const selectError = document.getElementById('caseType-error');
+                const customError = document.getElementById('caseTypeCustom-error');
+                const selectError = document.getElementById('caseType-error');
 
-                 if (caseTypeSelect.value === 'custom') {
-                     caseTypeCustomInput.style.display = 'block';
-                     // caseTypeCustomInput.required = true; // Set required for HTML5 validation if needed
-                     selectError.style.display = 'none'; // Hide select error if custom is chosen
-                     caseTypeSelect.classList.remove('error');
-                 } else {
-                     caseTypeCustomInput.style.display = 'none';
-                     caseTypeCustomInput.value = ''; // Clear custom value
-                     // caseTypeCustomInput.required = false;
-                     // Hide custom error and remove error state from custom input
-                     customError.style.display = 'none';
-                     caseTypeCustomInput.classList.remove('error');
-                     // Also clear potential select error if a valid option is now chosen
-                     if (caseTypeSelect.value !== '') {
+                if (caseTypeSelect.value === 'custom') {
+                    caseTypeCustomInput.style.display = 'block';
+                    // caseTypeCustomInput.required = true; // Set required for HTML5 validation if needed
+                    selectError.style.display = 'none'; // Hide select error if custom is chosen
+                    caseTypeSelect.classList.remove('error');
+                } else {
+                    caseTypeCustomInput.style.display = 'none';
+                    caseTypeCustomInput.value = ''; // Clear custom value
+                    // caseTypeCustomInput.required = false;
+                    // Hide custom error and remove error state from custom input
+                    customError.style.display = 'none';
+                    caseTypeCustomInput.classList.remove('error');
+                    // Also clear potential select error if a valid option is now chosen
+                    if (caseTypeSelect.value !== '') {
                         selectError.style.display = 'none';
                         caseTypeSelect.classList.remove('error');
-                     }
-                 }
-             }
-             // --- END ADDED Function ---
+                    }
+                }
+            }
+            // --- END ADDED Function ---
 
         }); // End DOMContentLoaded
     </script>
 </body>
+
 </html>
