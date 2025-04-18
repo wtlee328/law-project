@@ -1149,18 +1149,6 @@
                 const processText = caseProcessTextarea.value.trim(); if (!processText) { showNotification('請先在「案件詳細經過」欄位填寫內容', 'warning'); caseProcessTextarea.focus(); return; }
                 clearErrors();
 
-                // --- URL Check for AI Summarize ---
-                // Checks if the URL is empty OR still the default ngrok URL
-                if (!aiOrganizerWebhookUrl || aiOrganizerWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer') {
-                    showNotification('AI 統整功能未設定或設定錯誤', 'error');
-                    log('AI 統整失敗：Webhook URL 未設定或仍為預設值', 'error');
-                    // Log the actual value being checked for easier debugging
-                    log(`Current aiOrganizerWebhookUrl value: ${aiOrganizerWebhookUrl}`, 'debug');
-                    showError('caseProcess', 'AI 功能設定錯誤 (請檢查URL)');
-                    return; // Stop execution
-                 }
-                 // --- End URL Check ---
-
                 const aiButton = document.getElementById('aiSummarizeBtn'); let originalButtonHTML = ''; if (aiButton) { originalButtonHTML = aiButton.innerHTML; aiButton.disabled = true; aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 統整中...'; }
                 log('觸發 AI 統整，發送 類型+案由+經過 到 n8n...', 'request'); showNotification('正在請求 AI 統整，請稍候...', 'info');
                 try {
@@ -1183,19 +1171,6 @@
                 clearErrors();
                 const caseTitleText = document.getElementById('caseTitle')?.value.trim(); const factsText = document.getElementById('facts')?.value.trim(); const precedentsTextarea = document.getElementById('precedents');
                 if (!caseTitleText) { showNotification('請先填寫「案件案由」以利 AI 搜尋相關判決', 'warning'); showError('caseTitle', 'AI 搜尋需要案件案由'); document.getElementById('caseTitle')?.focus(); return; }
-
-                // --- URL Check for AI Search ---
-                // Checks if the URL is empty OR still the default ngrok URL (after fixing typo)
-                if (!aiSearchWebhookUrl || aiSearchWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-search') {
-                    showNotification('AI 搜尋功能未設定或設定錯誤 (Webhook URL)', 'error');
-                    log('AI 搜尋失敗：Webhook URL 未設定或仍為預設值', 'error');
-                    // Log the actual value being checked for easier debugging
-                    log(`Current aiSearchWebhookUrl value: ${aiSearchWebhookUrl}`, 'debug');
-                    // Optionally show error near the search button or precedents field
-                    // showError('precedents', 'AI 搜尋功能設定錯誤 (請檢查URL)');
-                    return; // Stop execution
-                 }
-                 // --- End URL Check ---
 
                 const aiButton = document.getElementById('aiSearchBtn'); let originalButtonHTML = ''; if (aiButton) { originalButtonHTML = aiButton.innerHTML; aiButton.disabled = true; aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜尋中...'; }
                 log('觸發 AI 判決搜尋...', 'request'); showNotification('正在請求 AI 搜尋相關判決...', 'info');
