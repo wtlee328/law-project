@@ -489,7 +489,7 @@
                 }
 
                 // 4. Check Webhook URL validity
-                if (!aiWebhookUrl || aiWebhookUrl === 'YOUR_N8N_AI_WEBHOOK_URL_HERE') {
+                if (!aiWebhookUrl || aiWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer') {
                     showNotification('AI 統整功能未設定或設定錯誤', 'error');
                     log('AI 統整失敗：Webhook URL 未設定或無效', 'error');
                     showError('caseProcess', 'AI 功能設定錯誤'); // Show error on related field
