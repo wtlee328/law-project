@@ -1070,7 +1070,7 @@
 
             // --- Configuration ---
             const generateWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-document';
-            const aiOrganizerWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer';
+            const aiWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer';
             // === AI Search Webhook URL (REPLACE THIS) ===
             const aiSearchWebhookUrl = 'Yhttps://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-search'; // <<< ！！！請務必替換成您 n8n AI 搜尋的 Webhook URL！！！
             // === END ===
@@ -1147,12 +1147,12 @@
                 const caseTypeVal = getCaseTypeValue(); if (!caseTypeVal) { showNotification('請選擇或輸入「書狀類型」', 'warning'); if (caseTypeSelect.value === 'custom') { showError('caseTypeCustom', '請輸入自訂書狀類型'); caseTypeCustomInput?.focus(); } else { showError('caseType', '請選擇書狀類型'); caseTypeSelect?.focus(); } return; }
                 const caseTitleText = caseTitleInput ? caseTitleInput.value.trim() : ''; if (!caseTitleText) { showNotification('請填寫「案件案由」欄位', 'warning'); showError('caseTitle', 'AI 統整需要案件案由'); caseTitleInput?.focus(); return; }
                 const processText = caseProcessTextarea.value.trim(); if (!processText) { showNotification('請先在「案件詳細經過」欄位填寫內容', 'warning'); caseProcessTextarea.focus(); return; }
-                clearErrors(); if (!aiOrganizerWebhookUrl || aiOrganizerWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer') { showNotification('AI 統整功能未設定或設定錯誤', 'error'); log('AI 統整失敗：Webhook URL 未設定或無效', 'error'); showError('caseProcess', 'AI 功能設定錯誤'); return; }
+                clearErrors(); if (!aiWebhookUrl || aiWebhookUrl === 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer') { showNotification('AI 統整功能未設定或設定錯誤', 'error'); log('AI 統整失敗：Webhook URL 未設定或無效', 'error'); showError('caseProcess', 'AI 功能設定錯誤'); return; }
                 const aiButton = document.getElementById('aiSummarizeBtn'); let originalButtonHTML = ''; if (aiButton) { originalButtonHTML = aiButton.innerHTML; aiButton.disabled = true; aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 統整中...'; }
                 log('觸發 AI 統整，發送 類型+案由+經過 到 n8n...', 'request'); showNotification('正在請求 AI 統整，請稍候...', 'info');
                 try {
                     const payload = { caseType: caseTypeVal, caseTitle: caseTitleText, caseProcess: processText }; log('發送到 AI Webhook 的 Payload:', 'debug'); if (DEBUG_MODE) console.log("AI Payload:", JSON.stringify(payload, null, 2));
-                    const response = await fetch(aiOrganizerWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': window.debugInfo.user || 'unknown', 'X-Action': 'analyze-case-details' }, body: JSON.stringify(payload) }); log(`AI 統整回應狀態: ${response.status}`, 'response');
+                    const response = await fetch(aiWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': window.debugInfo.user || 'unknown', 'X-Action': 'analyze-case-details' }, body: JSON.stringify(payload) }); log(`AI 統整回應狀態: ${response.status}`, 'response');
                     if (!response.ok) { let errorBody = await response.text(); log(`AI 伺服器錯誤回應內容: ${errorBody}`, 'error'); let errorMessage = `AI 統整伺服器錯誤: ${response.status} ${response.statusText}.`; try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; } catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; } throw new Error(errorMessage); }
                     const result = await response.json(); log('收到 AI 統整結果', 'response'); if (DEBUG_MODE) console.log('AI Result (Raw):', JSON.stringify(result, null, 2));
                     let aiData; if (Array.isArray(result) && result.length > 0) { aiData = result[0]; log('從回應陣列的第一個元素提取數據', 'process'); } else if (typeof result === 'object' && result !== null && !Array.isArray(result)) { aiData = result; log('直接使用回應物件作為數據', 'process'); } else { showNotification('AI 回應格式無法識別或為空', 'error', 8000); log(`AI 回應格式非預期陣列或物件: ${typeof result}`, 'error'); throw new Error('AI 回應格式無法識別'); }
