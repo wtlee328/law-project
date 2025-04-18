@@ -119,9 +119,9 @@
                         <div class="form-col">
                             <div class="form-group">
                                 <!-- MODIFIED: Added 'required' here for basic HTML validation -->
-                                <label for="caseType" class="required">訴狀類型</label>
+                                <label for="caseType" class="required">書狀類型</label>
                                 <select id="caseType" name="caseType" required>
-                                    <option value="" disabled selected>請選擇訴狀類型</option>
+                                    <option value="" disabled selected>請選擇書狀類型</option>
                                     <!-- MODIFIED: Updated options -->
                                     <option value="起訴狀">起訴狀</option>
                                     <option value="答辯狀">答辯狀</option>
@@ -139,9 +139,9 @@
                                     <option value="custom">自行輸入...</option> <!-- ADDED: Custom option -->
                                 </select>
                                 <!-- ADDED: Input field for custom type -->
-                                <input type="text" id="caseTypeCustom" name="caseTypeCustom" placeholder="請輸入自訂訴狀類型" style="display: none; margin-top: 10px;">
-                                <div class="error-message" id="caseType-error">請選擇或輸入訴狀類型</div>
-                                <div class="error-message" id="caseTypeCustom-error">請輸入自訂訴狀類型</div>
+                                <input type="text" id="caseTypeCustom" name="caseTypeCustom" placeholder="請輸入自訂書狀類型" style="display: none; margin-top: 10px;">
+                                <div class="error-message" id="caseType-error">請選擇或輸入書狀類型</div>
+                                <div class="error-message" id="caseTypeCustom-error">請輸入自訂書狀類型</div>
                             </div>
                         </div>
                         <div class="form-col">
@@ -167,7 +167,7 @@
                                     <option value="臺灣臺南地方法院">臺灣臺南地方法院</option>
                                     <option value="臺灣高雄地方法院">臺灣高雄地方法院</option>
                                      <option value="臺灣橋頭地方法院">臺灣橋頭地方法院</option>
-                                    <option value="其他法院">其他法院 (請於訴狀內容確認)</option>
+                                    <option value="其他法院">其他法院 (請於書狀內容確認)</option>
                                 </select>
                                  <div class="error-message" id="courtName-error">請選擇或確認法院名稱</div>
                             </div>
@@ -242,7 +242,7 @@
                         </label>
                         <textarea id="requests" name="requests" rows="5" placeholder="例：
 一、被告應給付原告新台幣○○萬元整。
-二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。
+二、及自起書狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。
 三、訴訟費用由被告負擔。
 （若為起訴，可加：四、原告願供擔保，請准宣告假執行。）" required></textarea>
                         <div class="error-message" id="requests-error">請填寫訴之聲明 (請求事項)</div>
@@ -277,7 +277,7 @@
 民法第478條
 民法第229條第1項
 民事訴訟法第78條"></textarea>
-                         <span class="helper-text">可不填，由 AI 統整或生成訴狀時判斷</span>
+                         <span class="helper-text">可不填，由 AI 統整或生成書狀時判斷</span>
                     </div>
                     <div class="form-group">
                         <label for="precedents">相關判決 (選填)</label>
@@ -318,13 +318,13 @@
     <!-- Modal for Displaying Generated Document -->
     <div id="documentModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"> <h2>生成的訴狀預覽</h2> <span class="close" title="關閉">×</span> </div>
+            <div class="modal-header"> <h2>生成的書狀預覽</h2> <span class="close" title="關閉">×</span> </div>
             <div class="document-area" id="documentContent" aria-live="polite"></div>
             <div class="document-buttons">
-                <button id="copyBtn" class="secondary-btn btn-uniform" title="複製訴狀內容至剪貼簿"><i class="fas fa-copy"></i> 複製內容</button>
-                <button id="printBtn" class="secondary-btn btn-uniform" title="列印訴狀"><i class="fas fa-print"></i> 列印</button>
+                <button id="copyBtn" class="secondary-btn btn-uniform" title="複製書狀內容至剪貼簿"><i class="fas fa-copy"></i> 複製內容</button>
+                <button id="printBtn" class="secondary-btn btn-uniform" title="列印書狀"><i class="fas fa-print"></i> 列印</button>
                 <button id="downloadBtn" class="secondary-btn btn-uniform" title="下載為 .txt 文字檔"><i class="fas fa-download"></i> 下載 (.txt)</button>
-                <button id="emailBtn" class="secondary-btn btn-uniform" title="將訴狀內容(模擬)寄送至您填寫的信箱"><i class="fas fa-envelope"></i> 寄送Email</button>
+                <button id="emailBtn" class="secondary-btn btn-uniform" title="將書狀內容(模擬)寄送至您填寫的信箱"><i class="fas fa-envelope"></i> 寄送Email</button>
             </div>
         </div>
     </div>
@@ -396,7 +396,7 @@
             function validateForm() {
                 let isValid = true; clearErrors(); log('開始表單驗證', 'validation');
                 const requiredFields = [
-                    // { id: 'caseType', message: '請選擇或輸入訴狀類型' }, // Handled separately below
+                    // { id: 'caseType', message: '請選擇或輸入書狀類型' }, // Handled separately below
                     { id: 'courtName', message: '請選擇法院名稱' }, { id: 'plaintiff', message: '請填寫原告資料' }, { id: 'defendant', message: '請填寫被告資料' }, { id: 'caseTitle', message: '請填寫案件案由' }, { id: 'requests', message: '請填寫訴之聲明 (請求事項)' }, { id: 'facts', message: '請填寫事實及理由' }, { id: 'evidence', message: '請填寫證據名稱及件數' }, { id: 'email', message: '請填寫有效的電子郵件' }
                 ];
                 requiredFields.forEach(field => { const element = document.getElementById(field.id); if (!element || !element.value.trim()) { showError(field.id, field.message); log(`驗證失敗: ${field.id} - ${field.message}`, 'validation'); isValid = false; } });
@@ -405,11 +405,11 @@
                 const caseTypeVal = caseTypeSelect.value;
                 const caseTypeCustomVal = caseTypeCustomInput.value.trim();
                 if (!caseTypeVal) { // No selection made
-                     showError('caseType', '請選擇或輸入訴狀類型');
+                     showError('caseType', '請選擇或輸入書狀類型');
                      log(`驗證失敗: caseType - 未選擇`, 'validation');
                      isValid = false;
                  } else if (caseTypeVal === 'custom' && !caseTypeCustomVal) { // Custom selected but input empty
-                     showError('caseTypeCustom', '請輸入自訂訴狀類型');
+                     showError('caseTypeCustom', '請輸入自訂書狀類型');
                      log(`驗證失敗: caseTypeCustom - 自訂類型為空`, 'validation');
                      isValid = false;
                  }
@@ -431,11 +431,11 @@
 
             // --- Button Creation & Setup ---
             function createButton(id, text, icon, styleClass, clickHandler, isSubmit = false, isUniform = true) { const button = document.createElement('button'); button.id = id; button.type = isSubmit ? 'submit' : 'button'; button.className = `btn ${styleClass}` + (isUniform ? ' btn-uniform' : ''); button.innerHTML = `<i class="fas fa-${icon}"></i> ${text}`; if (clickHandler) { button.addEventListener('click', clickHandler); } return button; }
-            function setupButtons() { buttonsContainer.innerHTML = ''; const leftButtonGroup = document.createElement('div'); const demoButton = createButton('demoBtn', '填入示範', 'magic', 'secondary-btn', fillDemoData); const testButton = createButton('testBtn', '本機測試', 'vial', 'btn-success', runTest); const resetButton = createButton('resetBtn', '清除重填', 'undo', 'btn-danger', resetForm); leftButtonGroup.appendChild(demoButton); leftButtonGroup.appendChild(testButton); leftButtonGroup.appendChild(resetButton); const savedData = loadDocumentFromLocalStorage(); if (savedData && savedData.timestamp) { const timestamp = new Date(savedData.timestamp); const now = new Date(); const diffMinutes = Math.floor((now - timestamp) / (1000 * 60)); if (diffMinutes < 60) { const restoreButton = createButton('restoreBtn', '恢復上次', 'history', 'btn-info', () => { if (savedData.content) { const processedText = processLegalDocumentText(savedData.content); documentContent.textContent = processedText; modal.style.display = 'block'; log(`從本地存儲恢復訴狀 (生成於 ${diffMinutes} 分鐘前)`, 'storage'); showNotification('已恢復上次生成的訴狀內容', 'success'); } else { showNotification('找不到上次的內容', 'warning'); } }); leftButtonGroup.appendChild(restoreButton); log(`發現 ${diffMinutes} 分鐘前生成的本地存儲數據`, 'info'); } } const submitButton = createButton('submitBtn', '生成訴狀', 'file-alt', 'btn-primary', null, true); buttonsContainer.appendChild(leftButtonGroup); buttonsContainer.appendChild(submitButton); form.removeEventListener('submit', handleFormSubmit); form.addEventListener('submit', handleFormSubmit); }
+            function setupButtons() { buttonsContainer.innerHTML = ''; const leftButtonGroup = document.createElement('div'); const demoButton = createButton('demoBtn', '填入示範', 'magic', 'secondary-btn', fillDemoData); const testButton = createButton('testBtn', '本機測試', 'vial', 'btn-success', runTest); const resetButton = createButton('resetBtn', '清除重填', 'undo', 'btn-danger', resetForm); leftButtonGroup.appendChild(demoButton); leftButtonGroup.appendChild(testButton); leftButtonGroup.appendChild(resetButton); const savedData = loadDocumentFromLocalStorage(); if (savedData && savedData.timestamp) { const timestamp = new Date(savedData.timestamp); const now = new Date(); const diffMinutes = Math.floor((now - timestamp) / (1000 * 60)); if (diffMinutes < 60) { const restoreButton = createButton('restoreBtn', '恢復上次', 'history', 'btn-info', () => { if (savedData.content) { const processedText = processLegalDocumentText(savedData.content); documentContent.textContent = processedText; modal.style.display = 'block'; log(`從本地存儲恢復書狀 (生成於 ${diffMinutes} 分鐘前)`, 'storage'); showNotification('已恢復上次生成的書狀內容', 'success'); } else { showNotification('找不到上次的內容', 'warning'); } }); leftButtonGroup.appendChild(restoreButton); log(`發現 ${diffMinutes} 分鐘前生成的本地存儲數據`, 'info'); } } const submitButton = createButton('submitBtn', '生成書狀', 'file-alt', 'btn-primary', null, true); buttonsContainer.appendChild(leftButtonGroup); buttonsContainer.appendChild(submitButton); form.removeEventListener('submit', handleFormSubmit); form.addEventListener('submit', handleFormSubmit); }
 
              // --- Button Action Handlers ---
             function fillDemoData() { log('正在填入示範數據...', 'ui'); clearErrors(); caseTypeSelect.value = '民事起訴狀'; handleCaseTypeChange(); /* Trigger change to hide custom input */ document.getElementById('courtName').value = '臺灣臺北地方法院'; document.getElementById('plaintiff').value = '林大明\n身分證字號：A123456789\n住址：臺北市信義區市府路1號\n電話：0911-111-111'; document.getElementById('defendant').value = '王小華\n身分證字號：B987654321\n住址：新北市板橋區縣民大道二段7號\n電話：0922-222-222'; document.getElementById('caseTitle').value = '請求返還借款'; document.getElementById('caseProcess').value = '被告王小華於民國113年2月1日向原告林大明開口借款新台幣十萬元整，聲稱家中有急用，約定同年5月1日還款。原告基於多年情誼，於113年2月5日以現金交付予被告。然屆至清償期，被告並未還款。原告於6月1日以LINE訊息催討，被告已讀不回。後續多次以電話聯繫，被告均未接聽或掛斷。'; document.getElementById('requests').value = '一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。'; document.getElementById('facts').value = '一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條等相關規定提起本訴，請求判如訴之聲明。'; document.getElementById('evidence').value = '原證1：LINE對話紀錄截圖乙份\n原證2：原告113年2月提款紀錄（佐證資金來源）'; document.getElementById('laws').value = '民法第474條\n民法第478條\n民法第229條第1項\n民法第233條第1項'; document.getElementById('precedents').value = ''; document.getElementById('email').value = 'demo.user@example.com'; document.getElementById('phone').value = '0912-345678'; updateAiButtonState(); showNotification('已填入示範數據', 'success'); }
-            function runTest() { fillDemoData(); log('開始本機測試流程...', 'test'); showNotification('使用示範數據進行本機測試...', 'info'); showLoading("模擬本機生成中...", 2); setTimeout(() => { hideLoading(); const testResponse = { output: `\n民事起訴狀（測試範本）\n案　　號： （法院自動編列）\n股　　別： （法院自動編列）\n\n原　　告　林大明\n　　　　　身分證字號：A123456789\n　　　　　住址：臺北市信義區市府路1號\n　　　　　電話：0911-111-111\n\n被　　告　王小華\n　　　　　身分證字號：B987654321\n　　　　　住址：新北市板橋區縣民大道二段7號\n　　　　　電話：0922-222-222\n\n為請求返還借款事件，依法起訴事：\n\n　　訴之聲明\n一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。\n\n　　事實及理由\n一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。（原告可提出113年2月提款紀錄佐證資金流動，詳參原證2）\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條、第229條第1項、第233條第1項等相關規定提起本訴，狀請 鈞院鑒核，賜判如訴之聲明，以維權益。\n\n　　證據\n原證1：LINE對話紀錄截圖乙份。\n原證2：原告113年2月提款紀錄影本乙份。\n\n謹　狀\n臺灣臺北地方法院民事庭　公鑒\n\n中華民國 ${new Date().getFullYear() - 1911} 年 ${new Date().getMonth() + 1} 月 ${new Date().getDate()} 日\n\n具狀人　林大明 （簽名或蓋章）\n` }; const finalOutput = processLegalDocumentText(testResponse); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput; modal.style.display = 'block'; log('本機測試訴狀已生成並顯示', 'test'); showNotification('本機測試訴狀已生成！', 'success'); setupButtons(); }, 1500); }
+            function runTest() { fillDemoData(); log('開始本機測試流程...', 'test'); showNotification('使用示範數據進行本機測試...', 'info'); showLoading("模擬本機生成中...", 2); setTimeout(() => { hideLoading(); const testResponse = { output: `\n民事起訴狀（測試範本）\n案　　號： （法院自動編列）\n股　　別： （法院自動編列）\n\n原　　告　林大明\n　　　　　身分證字號：A123456789\n　　　　　住址：臺北市信義區市府路1號\n　　　　　電話：0911-111-111\n\n被　　告　王小華\n　　　　　身分證字號：B987654321\n　　　　　住址：新北市板橋區縣民大道二段7號\n　　　　　電話：0922-222-222\n\n為請求返還借款事件，依法起訴事：\n\n　　訴之聲明\n一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。\n\n　　事實及理由\n一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。（原告可提出113年2月提款紀錄佐證資金流動，詳參原證2）\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條、第229條第1項、第233條第1項等相關規定提起本訴，狀請 鈞院鑒核，賜判如訴之聲明，以維權益。\n\n　　證據\n原證1：LINE對話紀錄截圖乙份。\n原證2：原告113年2月提款紀錄影本乙份。\n\n謹　狀\n臺灣臺北地方法院民事庭　公鑒\n\n中華民國 ${new Date().getFullYear() - 1911} 年 ${new Date().getMonth() + 1} 月 ${new Date().getDate()} 日\n\n具狀人　林大明 （簽名或蓋章）\n` }; const finalOutput = processLegalDocumentText(testResponse); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput; modal.style.display = 'block'; log('本機測試書狀已生成並顯示', 'test'); showNotification('本機測試書狀已生成！', 'success'); setupButtons(); }, 1500); }
             function resetForm() { if (confirm('您確定要清除所有已填寫的欄位嗎？')) { log('執行表單重置', 'ui'); form.reset(); clearErrors(); handleCaseTypeChange(); /* Ensure custom field is hidden */ updateAiButtonState(); showNotification('表單欄位已清除', 'info'); } }
 
             // --- AI Summarize Button Logic ---
@@ -460,12 +460,12 @@
                 // 1. Get and Validate Case Type
                 const caseTypeVal = getCaseTypeValue(); // Use helper function
                 if (!caseTypeVal) {
-                    showNotification('請選擇或輸入「訴狀類型」', 'warning');
+                    showNotification('請選擇或輸入「書狀類型」', 'warning');
                     if (caseTypeSelect.value === 'custom') {
-                        showError('caseTypeCustom', '請輸入自訂訴狀類型');
+                        showError('caseTypeCustom', '請輸入自訂書狀類型');
                         caseTypeCustomInput?.focus();
                     } else {
-                         showError('caseType', '請選擇訴狀類型');
+                         showError('caseType', '請選擇書狀類型');
                          caseTypeSelect?.focus();
                     }
                     return; // Stop if type is missing
@@ -616,7 +616,7 @@
 
                 // --- MODIFIED: Get correct case type value for submission ---
                  const finalCaseType = getCaseTypeValue();
-                 log(`提交的訴狀類型: ${finalCaseType}`, 'data');
+                 log(`提交的書狀類型: ${finalCaseType}`, 'data');
                  // --- END MODIFIED ---
 
                 const formData = {
@@ -633,8 +633,8 @@
                 fetch(generateWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Request-ID': `gen-${Date.now()}-${Math.random().toString(16).substring(2, 8)}` }, body: JSON.stringify(formData) })
                 .then(async response => { clearInterval(timerInterval); log(`收到 n8n (生成) 回應，狀態: ${response.status}`, 'response'); if (!response.ok) { let errorBody = await response.text(); log(`伺服器錯誤回應內容: ${errorBody}`, 'error'); throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}. ${errorBody || '無詳細錯誤訊息'}`); } return response.text(); })
                 .then(text => { log("收到原始生成回應文本", 'debug'); if (DEBUG_MODE) console.log("Raw Response Text:", text); let data; try { data = JSON.parse(text); } catch (e) { log("生成回應不是有效的 JSON，將直接使用收到的文本", 'debug'); data = text; } return data; })
-                .then(data => { hideLoading(); log("收到最終生成回應數據", 'response'); if (DEBUG_MODE) console.log("Processed Response Data:", data); const finalOutput = processLegalDocumentText(data); log("最終訴狀文本已處理完成", 'process'); if (DEBUG_MODE) console.log("Final Output for Display:", finalOutput); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput || "未能生成內容，請檢查回應。"; modal.style.display = 'block'; showNotification('訴狀已成功生成！', 'success'); setupButtons(); })
-                .catch(error => { clearInterval(timerInterval); hideLoading(); console.error('Form Submission/Generation Error:', error); log(`生成請求失敗: ${error.message}`, 'error'); showNotification(`生成訴狀時發生錯誤：${error.message || '未知錯誤'}`, 'error', 8000); });
+                .then(data => { hideLoading(); log("收到最終生成回應數據", 'response'); if (DEBUG_MODE) console.log("Processed Response Data:", data); const finalOutput = processLegalDocumentText(data); log("最終書狀文本已處理完成", 'process'); if (DEBUG_MODE) console.log("Final Output for Display:", finalOutput); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput || "未能生成內容，請檢查回應。"; modal.style.display = 'block'; showNotification('訴狀已成功生成！', 'success'); setupButtons(); })
+                .catch(error => { clearInterval(timerInterval); hideLoading(); console.error('Form Submission/Generation Error:', error); log(`生成請求失敗: ${error.message}`, 'error'); showNotification(`生成書狀時發生錯誤：${error.message || '未知錯誤'}`, 'error', 8000); });
             }
 
             // --- Modal and Document Actions ---
@@ -642,13 +642,13 @@
             window.addEventListener('click', (event) => { if (event.target === modal) { modal.style.display = 'none'; } });
             window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && modal.style.display === 'block') { modal.style.display = 'none'; } });
              // Copy Logic
-             if (copyBtn) { copyBtn.addEventListener('click', () => { const textToCopy = documentContent.textContent; if (!textToCopy) { showNotification('沒有內容可複製', 'warning'); return; } navigator.clipboard.writeText(textToCopy).then(() => { showNotification('訴狀內容已複製到剪貼簿', 'success'); log('內容已複製', 'action'); }).catch(err => { showNotification('複製失敗，瀏覽器可能不支援或未授權', 'error'); log(`複製失敗: ${err.message}`, 'error'); }); }); }
+             if (copyBtn) { copyBtn.addEventListener('click', () => { const textToCopy = documentContent.textContent; if (!textToCopy) { showNotification('沒有內容可複製', 'warning'); return; } navigator.clipboard.writeText(textToCopy).then(() => { showNotification('書狀內容已複製到剪貼簿', 'success'); log('內容已複製', 'action'); }).catch(err => { showNotification('複製失敗，瀏覽器可能不支援或未授權', 'error'); log(`複製失敗: ${err.message}`, 'error'); }); }); }
              // Print Logic
              if (printBtn) { printBtn.addEventListener('click', () => { log('觸發列印', 'action'); modal.classList.add('printing'); window.print(); setTimeout(() => modal.classList.remove('printing'), 500); }); }
              // Download Logic
-             if (downloadBtn) { downloadBtn.addEventListener('click', () => { try { const text = documentContent.textContent; if (!text) { showNotification('沒有內容可下載', 'warning'); return; } const caseType = getCaseTypeValue() || '訴狀'; /* Use helper here too */ const today = new Date().toISOString().slice(0, 10); const filename = `${caseType}_${today}.txt`; const blob = new Blob([text], {type: 'text/plain;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); showNotification(`已下載文件：${filename}`, 'success'); log(`訴狀已下載為 ${filename}`, 'action'); } catch (e) { log(`下載失敗: ${e.message}`, 'error'); showNotification('下載文件時發生錯誤', 'error'); } }); }
+             if (downloadBtn) { downloadBtn.addEventListener('click', () => { try { const text = documentContent.textContent; if (!text) { showNotification('沒有內容可下載', 'warning'); return; } const caseType = getCaseTypeValue() || '書狀'; /* Use helper here too */ const today = new Date().toISOString().slice(0, 10); const filename = `${caseType}_${today}.txt`; const blob = new Blob([text], {type: 'text/plain;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); showNotification(`已下載文件：${filename}`, 'success'); log(`書狀已下載為 ${filename}`, 'action'); } catch (e) { log(`下載失敗: ${e.message}`, 'error'); showNotification('下載文件時發生錯誤', 'error'); } }); }
              // Email Logic (Simulation)
-             if (emailBtn) { emailBtn.addEventListener('click', () => { const userEmail = document.getElementById('email').value; const docText = documentContent.textContent; if (!userEmail || !validateEmail(userEmail)) { showNotification('請先在主表單填寫有效的電子郵件地址', 'warning'); showError('email', '請填寫有效的電子郵件以寄送'); return; } if (!docText) { showNotification('沒有訴狀內容可寄送', 'warning'); return; } log(`準備模擬發送郵件至 ${userEmail}`, 'action'); showNotification(`即將模擬發送訴狀至：${userEmail}`, 'info'); emailBtn.disabled = true; emailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 寄送中...'; setTimeout(() => { emailBtn.disabled = false; emailBtn.innerHTML = '<i class="fas fa-envelope"></i> 寄送Email'; showNotification(`訴狀已「模擬」發送至您的信箱：${userEmail}`, 'success'); log(`模擬郵件已發送至 ${userEmail}`, 'action'); }, 2500); }); }
+             if (emailBtn) { emailBtn.addEventListener('click', () => { const userEmail = document.getElementById('email').value; const docText = documentContent.textContent; if (!userEmail || !validateEmail(userEmail)) { showNotification('請先在主表單填寫有效的電子郵件地址', 'warning'); showError('email', '請填寫有效的電子郵件以寄送'); return; } if (!docText) { showNotification('沒有訴狀內容可寄送', 'warning'); return; } log(`準備模擬發送郵件至 ${userEmail}`, 'action'); showNotification(`即將模擬發送書狀至：${userEmail}`, 'info'); emailBtn.disabled = true; emailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 寄送中...'; setTimeout(() => { emailBtn.disabled = false; emailBtn.innerHTML = '<i class="fas fa-envelope"></i> 寄送Email'; showNotification(`書狀已「模擬」發送至您的信箱：${userEmail}`, 'success'); log(`模擬郵件已發送至 ${userEmail}`, 'action'); }, 2500); }); }
 
 
             // --- Initialization ---
