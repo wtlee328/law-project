@@ -18,7 +18,7 @@
         window.debugInfo = {
             logRequests: true,
             logResponses: true,
-            version: "wtlee328-debug-2025-04-18", // Updated version/date
+            version: "wtlee328-debug-2025-04-18-fix1", // Updated version/date
             user: "wtlee328",
             timestamp: new Date().toISOString() // Use current time
         };
@@ -157,7 +157,7 @@
         }
 
         /* --- Button Styles --- */
-        button {
+        button, .btn { /* Add .btn base class */
             border: none;
             padding: 10px 20px; /* Adjusted padding */
             font-size: 1rem;
@@ -170,15 +170,16 @@
             justify-content: center;
             vertical-align: middle; /* Align buttons better if wrapping */
             line-height: 1.5; /* Ensure consistent height */
+            text-decoration: none; /* Remove underline from potential <a> tags styled as buttons */
         }
-        button:active {
+        button:active, .btn:active {
              transform: scale(0.98); /* Slight press effect */
         }
 
-        button i {
+        button i, .btn i {
             margin-right: 8px;
         }
-        button:disabled {
+        button:disabled, .btn:disabled {
             opacity: 0.65;
             cursor: not-allowed;
         }
@@ -939,14 +940,13 @@
             const caseProcessTextarea = document.getElementById('caseProcess');
             const aiSummarizeButtonContainer = document.getElementById('aiSummarizeButtonContainer');
             const estimatedTimeP = document.getElementById('estimatedTime');
+            const caseTitleInput = document.getElementById('caseTitle'); // Added reference
 
             // --- Configuration ---
-            // N8N Webhook URLs
             const generateWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-document';
-            // !! IMPORTANT: Use the CORRECT PRODUCTION URL for AI !!
-            const aiWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer'; // Assuming this is the PRODUCTION URL now
+            const aiWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-doc-organizer'; // Ensure this is correct PRODUCTION URL
             const LOCAL_STORAGE_KEY = 'wtlee328_lastLegalDocument';
-            const DEBUG_MODE = true; // Set to false to disable console logs for non-errors
+            const DEBUG_MODE = true;
 
              // --- Logging Utility ---
             function log(message, type = 'info') {
@@ -962,9 +962,7 @@
                     logEntry.className = `log-entry ${type}`;
                     logEntry.textContent = `[${timestamp}] ${message.toString().substring(0, 300)}`;
                     debugPanel.appendChild(logEntry);
-                    while (debugPanel.childNodes.length > 100) {
-                        debugPanel.removeChild(debugPanel.firstChild);
-                    }
+                    while (debugPanel.childNodes.length > 100) { debugPanel.removeChild(debugPanel.firstChild); }
                     debugPanel.scrollTop = debugPanel.scrollHeight;
                 }
             }
@@ -980,18 +978,14 @@
                  notification.appendChild(icon);
                  notification.appendChild(document.createTextNode(` ${message}`));
                  notification.classList.add('show');
-                 setTimeout(() => {
-                     notification.classList.remove('show');
-                 }, duration);
+                 setTimeout(() => { notification.classList.remove('show'); }, duration);
             }
-
             function showLoading(message = "處理中，請稍候...", estimatedSeconds = null) {
                  if (!loadingOverlay) return;
                  loadingOverlay.querySelector('p:first-of-type').textContent = message;
                  estimatedTimeP.textContent = estimatedSeconds ? `預計需時：約 ${estimatedSeconds} 秒` : '';
                  loadingOverlay.style.display = 'flex';
-             }
-
+            }
             function hideLoading() {
                  if (loadingOverlay) loadingOverlay.style.display = 'none';
             }
@@ -1000,371 +994,95 @@
             function clearErrors() {
                  form.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
                  form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
-             }
-
+            }
             function showError(fieldId, message) {
                  const field = document.getElementById(fieldId);
                  const errorElement = document.getElementById(`${fieldId}-error`);
                  if (field) field.classList.add('error');
-                 if (errorElement) {
-                     errorElement.textContent = message;
-                     errorElement.style.display = 'block';
-                 } else {
-                     log(`Error element not found for field: ${fieldId}`, 'warning');
-                 }
+                 if (errorElement) { errorElement.textContent = message; errorElement.style.display = 'block'; }
+                 else { log(`Error element not found for field: ${fieldId}`, 'warning'); }
             }
-
-            function validateEmail(email) {
-                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                 return emailRegex.test(email);
-             }
-
+            function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
             function validateForm() {
-                let isValid = true;
-                clearErrors();
-                log('開始表單驗證', 'validation');
-                const requiredFields = [
-                    { id: 'caseType', message: '請選擇訴狀類型' },
-                    { id: 'courtName', message: '請選擇法院名稱' },
-                    { id: 'plaintiff', message: '請填寫原告資料' },
-                    { id: 'defendant', message: '請填寫被告資料' },
-                    { id: 'caseTitle', message: '請填寫案件案由' },
-                    { id: 'requests', message: '請填寫訴之聲明 (請求事項)' },
-                    { id: 'facts', message: '請填寫事實及理由' },
-                    { id: 'evidence', message: '請填寫證據名稱及件數' },
-                    { id: 'email', message: '請填寫有效的電子郵件' }
-                ];
-                requiredFields.forEach(field => {
-                    const element = document.getElementById(field.id);
-                    if (!element || !element.value.trim()) {
-                        showError(field.id, field.message);
-                         log(`驗證失敗: ${field.id} - ${field.message}`, 'validation');
-                        isValid = false;
-                    }
-                });
-                const factsValue = document.getElementById('facts').value.trim();
-                if (factsValue && factsValue.split('\n').filter(line => line.trim()).length < 3) {
-                    showError('facts', '事實及理由請至少填寫3點');
-                     log(`驗證失敗: facts - 未滿3點`, 'validation');
-                    isValid = false;
-                }
-                const emailValue = document.getElementById('email').value.trim();
-                if (emailValue && !validateEmail(emailValue)) {
-                    showError('email', '請填寫有效的電子郵件格式');
-                    log(`驗證失敗: email - 格式錯誤`, 'validation');
-                    isValid = false;
-                }
+                let isValid = true; clearErrors(); log('開始表單驗證', 'validation');
+                const requiredFields = [ { id: 'caseType', message: '請選擇訴狀類型' }, { id: 'courtName', message: '請選擇法院名稱' }, { id: 'plaintiff', message: '請填寫原告資料' }, { id: 'defendant', message: '請填寫被告資料' }, { id: 'caseTitle', message: '請填寫案件案由' }, { id: 'requests', message: '請填寫訴之聲明 (請求事項)' }, { id: 'facts', message: '請填寫事實及理由' }, { id: 'evidence', message: '請填寫證據名稱及件數' }, { id: 'email', message: '請填寫有效的電子郵件' } ];
+                requiredFields.forEach(field => { const element = document.getElementById(field.id); if (!element || !element.value.trim()) { showError(field.id, field.message); log(`驗證失敗: ${field.id} - ${field.message}`, 'validation'); isValid = false; } });
+                const factsValue = document.getElementById('facts').value.trim(); if (factsValue && factsValue.split('\n').filter(line => line.trim()).length < 3) { showError('facts', '事實及理由請至少填寫3點'); log(`驗證失敗: facts - 未滿3點`, 'validation'); isValid = false; }
+                const emailValue = document.getElementById('email').value.trim(); if (emailValue && !validateEmail(emailValue)) { showError('email', '請填寫有效的電子郵件格式'); log(`驗證失敗: email - 格式錯誤`, 'validation'); isValid = false; }
                 log(`表單驗證結果: ${isValid ? '通過' : '失敗'}`, 'validation');
-                 if (!isValid) {
-                     const firstError = form.querySelector('.error');
-                     if (firstError) {
-                         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                         firstError.focus({ preventScroll: true });
-                     }
-                 }
+                if (!isValid) { const firstError = form.querySelector('.error'); if (firstError) { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstError.focus({ preventScroll: true }); } }
                 return isValid;
             }
 
             // --- Data Handling & Processing ---
-             function extractActionInput(responseData) {
-                 try {
-                     if (typeof responseData === 'string') {
-                         try { responseData = JSON.parse(responseData); } catch (e) { /* Not JSON, proceed as string */ }
-                     }
-                     if (typeof responseData === 'object' && responseData !== null) {
-                         // Prioritize specific structure if available
-                         if (responseData.action === "Final Answer" && responseData.action_input) {
-                             log("提取自 action_input", "process");
-                             return responseData.action_input;
-                         }
-                         // Check standard 'output' key
-                         if (responseData.output) {
-                             log("提取自 output 屬性", "process");
-                             return responseData.output;
-                         }
-                          // Check standard 'text' key (often used by LLMs)
-                          if (responseData.text) {
-                              log("提取自 text 屬性", "process");
-                              return responseData.text;
-                          }
-                     }
-                      // If it's a string after potential parsing, or fallback
-                      if(typeof responseData === 'string') {
-                         log("作為原始字串處理", "process");
-                         return responseData;
-                      }
-                      // If it's an object with no known output key, stringify it
-                      log("未找到已知輸出鍵，將物件字串化", "process");
-                      return JSON.stringify(responseData, null, 2);
-
-                 } catch (e) {
-                     log(`提取 action_input/output/text 時出錯: ${e.message}`, 'error');
-                     return responseData; // Return original on error
-                 }
-             }
-
-            function processLegalDocumentText(data) {
-                 if (!data) return '';
-                 let processedText = extractActionInput(data); // Use the updated extractor
-                 log(`處理前文本類型: ${typeof processedText}`, 'debug');
-
-                 if (typeof processedText === 'string') {
-                     processedText = processedText
-                         .replace(/\\n/g, '\n')
-                         .replace(/\\"/g, '"')
-                         .replace(/\\t/g, '\t')
-                         .replace(/\\\\/g, '\\');
-                     // Remove potential markdown code blocks if AI wraps output
-                     processedText = processedText.replace(/^```(json|text|markdown)?\s*/gm, '').replace(/```\s*$/gm, '');
-                     log("字串處理完成", 'debug');
-                 } else {
-                      log("輸入非字串，無法進行字串處理", 'debug');
-                 }
-
-                 return String(processedText || '').trim(); // Ensure return is trimmed string
-            }
-
+            function extractActionInput(responseData) { try { if (typeof responseData === 'string') { try { responseData = JSON.parse(responseData); } catch (e) { /* Not JSON, proceed as string */ } } if (typeof responseData === 'object' && responseData !== null) { if (responseData.action === "Final Answer" && responseData.action_input) { log("提取自 action_input", "process"); return responseData.action_input; } if (responseData.output) { log("提取自 output 屬性", "process"); return responseData.output; } if (responseData.text) { log("提取自 text 屬性", "process"); return responseData.text; } } if(typeof responseData === 'string') { log("作為原始字串處理", "process"); return responseData; } log("未找到已知輸出鍵，將物件字串化", "process"); return JSON.stringify(responseData, null, 2); } catch (e) { log(`提取 action_input/output/text 時出錯: ${e.message}`, 'error'); return responseData; } }
+            function processLegalDocumentText(data) { if (!data) return ''; let processedText = extractActionInput(data); log(`處理前文本類型: ${typeof processedText}`, 'debug'); if (typeof processedText === 'string') { processedText = processedText .replace(/\\n/g, '\n') .replace(/\\"/g, '"') .replace(/\\t/g, '\t') .replace(/\\\\/g, '\\'); processedText = processedText.replace(/^```(json|text|markdown)?\s*/gm, '').replace(/```\s*$/gm, ''); log("字串處理完成", 'debug'); } else { log("輸入非字串，無法進行字串處理", 'debug'); } return String(processedText || '').trim(); }
 
             // --- Local Storage ---
-            function saveDocumentToLocalStorage(documentText) {
-                try {
-                    const dataToSave = {
-                         content: documentText,
-                         timestamp: new Date().toISOString()
-                     };
-                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
-                    log('訴狀已保存到本地存儲', 'storage');
-                } catch (e) {
-                    log(`無法保存到本地存儲: ${e.message}`, 'error');
-                    showNotification('無法保存本次結果至瀏覽器暫存', 'warning');
-                }
-            }
-
-            function loadDocumentFromLocalStorage() {
-                 try {
-                     const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-                     if (savedData) {
-                         const parsedData = JSON.parse(savedData);
-                         if (parsedData && parsedData.content && parsedData.timestamp) {
-                             return parsedData;
-                         }
-                     }
-                 } catch (e) {
-                     log(`無法從本地存儲讀取或解析: ${e.message}`, 'error');
-                     localStorage.removeItem(LOCAL_STORAGE_KEY);
-                 }
-                 return null;
-            }
-
+            function saveDocumentToLocalStorage(documentText) { try { const dataToSave = { content: documentText, timestamp: new Date().toISOString() }; localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave)); log('訴狀已保存到本地存儲', 'storage'); } catch (e) { log(`無法保存到本地存儲: ${e.message}`, 'error'); showNotification('無法保存本次結果至瀏覽器暫存', 'warning'); } }
+            function loadDocumentFromLocalStorage() { try { const savedData = localStorage.getItem(LOCAL_STORAGE_KEY); if (savedData) { const parsedData = JSON.parse(savedData); if (parsedData && parsedData.content && parsedData.timestamp) { return parsedData; } } } catch (e) { log(`無法從本地存儲讀取或解析: ${e.message}`, 'error'); localStorage.removeItem(LOCAL_STORAGE_KEY); } return null; }
 
             // --- Button Creation & Setup ---
-            function createButton(id, text, icon, styleClass, clickHandler, isSubmit = false, isUniform = true) {
-                const button = document.createElement('button');
-                button.id = id;
-                button.type = isSubmit ? 'submit' : 'button';
-                // Combine base btn class with specific style class and potentially uniform class
-                button.className = `btn ${styleClass}` + (isUniform ? ' btn-uniform' : '');
-                button.innerHTML = `<i class="fas fa-${icon}"></i> ${text}`;
-                if (clickHandler) {
-                    button.addEventListener('click', clickHandler);
-                }
-                return button;
-            }
-
-
-            function setupButtons() {
-                buttonsContainer.innerHTML = ''; // Clear existing buttons
-                const leftButtonGroup = document.createElement('div');
-
-                // Use the CSS classes defined in <style>
-                 const demoButton = createButton('demoBtn', '填入示範', 'magic', 'secondary-btn', fillDemoData); // Use secondary-btn class
-                 const testButton = createButton('testBtn', '本機測試', 'vial', 'btn-success', runTest);
-                 const resetButton = createButton('resetBtn', '清除重填', 'undo', 'btn-danger', resetForm);
-
-                 leftButtonGroup.appendChild(demoButton);
-                 leftButtonGroup.appendChild(testButton);
-                 leftButtonGroup.appendChild(resetButton);
-
-                 const savedData = loadDocumentFromLocalStorage();
-                 if (savedData && savedData.timestamp) {
-                     const timestamp = new Date(savedData.timestamp);
-                     const now = new Date();
-                     const diffMinutes = Math.floor((now - timestamp) / (1000 * 60));
-
-                     if (diffMinutes < 60) {
-                         const restoreButton = createButton('restoreBtn', '恢復上次', 'history', 'btn-info', () => {
-                             if (savedData.content) {
-                                 const processedText = processLegalDocumentText(savedData.content);
-                                 documentContent.textContent = processedText;
-                                 modal.style.display = 'block';
-                                 log(`從本地存儲恢復訴狀 (生成於 ${diffMinutes} 分鐘前)`, 'storage');
-                                 showNotification('已恢復上次生成的訴狀內容', 'success');
-                             } else {
-                                 showNotification('找不到上次的內容', 'warning');
-                             }
-                         });
-                         leftButtonGroup.appendChild(restoreButton);
-                         log(`發現 ${diffMinutes} 分鐘前生成的本地存儲數據`, 'info');
-                     }
-                 }
-
-                // Create the main submit button
-                const submitButton = createButton('submitBtn', '生成訴狀', 'file-alt', 'btn-primary', null, true);
-
-                buttonsContainer.appendChild(leftButtonGroup);
-                buttonsContainer.appendChild(submitButton);
-
-                form.removeEventListener('submit', handleFormSubmit);
-                form.addEventListener('submit', handleFormSubmit);
-            }
+            function createButton(id, text, icon, styleClass, clickHandler, isSubmit = false, isUniform = true) { const button = document.createElement('button'); button.id = id; button.type = isSubmit ? 'submit' : 'button'; button.className = `btn ${styleClass}` + (isUniform ? ' btn-uniform' : ''); button.innerHTML = `<i class="fas fa-${icon}"></i> ${text}`; if (clickHandler) { button.addEventListener('click', clickHandler); } return button; }
+            function setupButtons() { buttonsContainer.innerHTML = ''; const leftButtonGroup = document.createElement('div'); const demoButton = createButton('demoBtn', '填入示範', 'magic', 'secondary-btn', fillDemoData); const testButton = createButton('testBtn', '本機測試', 'vial', 'btn-success', runTest); const resetButton = createButton('resetBtn', '清除重填', 'undo', 'btn-danger', resetForm); leftButtonGroup.appendChild(demoButton); leftButtonGroup.appendChild(testButton); leftButtonGroup.appendChild(resetButton); const savedData = loadDocumentFromLocalStorage(); if (savedData && savedData.timestamp) { const timestamp = new Date(savedData.timestamp); const now = new Date(); const diffMinutes = Math.floor((now - timestamp) / (1000 * 60)); if (diffMinutes < 60) { const restoreButton = createButton('restoreBtn', '恢復上次', 'history', 'btn-info', () => { if (savedData.content) { const processedText = processLegalDocumentText(savedData.content); documentContent.textContent = processedText; modal.style.display = 'block'; log(`從本地存儲恢復訴狀 (生成於 ${diffMinutes} 分鐘前)`, 'storage'); showNotification('已恢復上次生成的訴狀內容', 'success'); } else { showNotification('找不到上次的內容', 'warning'); } }); leftButtonGroup.appendChild(restoreButton); log(`發現 ${diffMinutes} 分鐘前生成的本地存儲數據`, 'info'); } } const submitButton = createButton('submitBtn', '生成訴狀', 'file-alt', 'btn-primary', null, true); buttonsContainer.appendChild(leftButtonGroup); buttonsContainer.appendChild(submitButton); form.removeEventListener('submit', handleFormSubmit); form.addEventListener('submit', handleFormSubmit); }
 
              // --- Button Action Handlers ---
-            function fillDemoData() {
-                log('正在填入示範數據...', 'ui');
-                clearErrors();
-                document.getElementById('caseType').value = '民事起訴狀';
-                document.getElementById('courtName').value = '臺灣臺北地方法院';
-                document.getElementById('plaintiff').value = '林大明\n身分證字號：A123456789\n住址：臺北市信義區市府路1號\n電話：0911-111-111';
-                document.getElementById('defendant').value = '王小華\n身分證字號：B987654321\n住址：新北市板橋區縣民大道二段7號\n電話：0922-222-222';
-                document.getElementById('caseTitle').value = '請求返還借款';
-                document.getElementById('caseProcess').value = '被告王小華於民國113年2月1日向原告林大明開口借款新台幣十萬元整，聲稱家中有急用，約定同年5月1日還款。原告基於多年情誼，於113年2月5日以現金交付予被告。然屆至清償期，被告並未還款。原告於6月1日以LINE訊息催討，被告已讀不回。後續多次以電話聯繫，被告均未接聽或掛斷。';
-                document.getElementById('requests').value = '一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。';
-                document.getElementById('facts').value = '一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條等相關規定提起本訴，請求判如訴之聲明。';
-                document.getElementById('evidence').value = '原證1：LINE對話紀錄截圖乙份\n原證2：原告113年2月提款紀錄（佐證資金來源）';
-                document.getElementById('laws').value = '民法第474條\n民法第478條\n民法第229條第1項\n民法第233條第1項';
-                document.getElementById('precedents').value = '';
-                document.getElementById('email').value = 'demo.user@example.com';
-                document.getElementById('phone').value = '0912-345678';
-                updateAiButtonState();
-                showNotification('已填入示範數據', 'success');
-            }
+            function fillDemoData() { log('正在填入示範數據...', 'ui'); clearErrors(); document.getElementById('caseType').value = '民事起訴狀'; document.getElementById('courtName').value = '臺灣臺北地方法院'; document.getElementById('plaintiff').value = '林大明\n身分證字號：A123456789\n住址：臺北市信義區市府路1號\n電話：0911-111-111'; document.getElementById('defendant').value = '王小華\n身分證字號：B987654321\n住址：新北市板橋區縣民大道二段7號\n電話：0922-222-222'; document.getElementById('caseTitle').value = '請求返還借款'; document.getElementById('caseProcess').value = '被告王小華於民國113年2月1日向原告林大明開口借款新台幣十萬元整，聲稱家中有急用，約定同年5月1日還款。原告基於多年情誼，於113年2月5日以現金交付予被告。然屆至清償期，被告並未還款。原告於6月1日以LINE訊息催討，被告已讀不回。後續多次以電話聯繫，被告均未接聽或掛斷。'; document.getElementById('requests').value = '一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。'; document.getElementById('facts').value = '一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條等相關規定提起本訴，請求判如訴之聲明。'; document.getElementById('evidence').value = '原證1：LINE對話紀錄截圖乙份\n原證2：原告113年2月提款紀錄（佐證資金來源）'; document.getElementById('laws').value = '民法第474條\n民法第478條\n民法第229條第1項\n民法第233條第1項'; document.getElementById('precedents').value = ''; document.getElementById('email').value = 'demo.user@example.com'; document.getElementById('phone').value = '0912-345678'; updateAiButtonState(); showNotification('已填入示範數據', 'success'); }
+            function runTest() { fillDemoData(); log('開始本機測試流程...', 'test'); showNotification('使用示範數據進行本機測試...', 'info'); showLoading("模擬本機生成中...", 2); setTimeout(() => { hideLoading(); const testResponse = { output: `\n民事起訴狀（測試範本）\n案　　號： （法院自動編列）\n股　　別： （法院自動編列）\n\n原　　告　林大明\n　　　　　身分證字號：A123456789\n　　　　　住址：臺北市信義區市府路1號\n　　　　　電話：0911-111-111\n\n被　　告　王小華\n　　　　　身分證字號：B987654321\n　　　　　住址：新北市板橋區縣民大道二段7號\n　　　　　電話：0922-222-222\n\n為請求返還借款事件，依法起訴事：\n\n　　訴之聲明\n一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。\n\n　　事實及理由\n一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。（原告可提出113年2月提款紀錄佐證資金流動，詳參原證2）\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條、第229條第1項、第233條第1項等相關規定提起本訴，狀請 鈞院鑒核，賜判如訴之聲明，以維權益。\n\n　　證據\n原證1：LINE對話紀錄截圖乙份。\n原證2：原告113年2月提款紀錄影本乙份。\n\n謹　狀\n臺灣臺北地方法院民事庭　公鑒\n\n中華民國 ${new Date().getFullYear() - 1911} 年 ${new Date().getMonth() + 1} 月 ${new Date().getDate()} 日\n\n具狀人　林大明 （簽名或蓋章）\n` }; const finalOutput = processLegalDocumentText(testResponse); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput; modal.style.display = 'block'; log('本機測試訴狀已生成並顯示', 'test'); showNotification('本機測試訴狀已生成！', 'success'); setupButtons(); }, 1500); }
+            function resetForm() { if (confirm('您確定要清除所有已填寫的欄位嗎？')) { log('執行表單重置', 'ui'); form.reset(); clearErrors(); updateAiButtonState(); showNotification('表單欄位已清除', 'info'); } }
 
-            function runTest() {
-                 fillDemoData();
-                 log('開始本機測試流程...', 'test');
-                 showNotification('使用示範數據進行本機測試...', 'info');
-                 showLoading("模擬本機生成中...", 2);
-                 setTimeout(() => {
-                     hideLoading();
-                     const testResponse = { // Simulate a response containing the text directly or in 'output'
-                         output: `
-民事起訴狀（測試範本）
-案　　號： （法院自動編列）
-股　　別： （法院自動編列）
-
-原　　告　林大明
-　　　　　身分證字號：A123456789
-　　　　　住址：臺北市信義區市府路1號
-　　　　　電話：0911-111-111
-
-被　　告　王小華
-　　　　　身分證字號：B987654321
-　　　　　住址：新北市板橋區縣民大道二段7號
-　　　　　電話：0922-222-222
-
-為請求返還借款事件，依法起訴事：
-
-　　訴之聲明
-一、被告應給付原告新台幣拾萬元整。
-二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。
-三、訴訟費用由被告負擔。
-四、原告願供擔保，請准宣告假執行。
-
-　　事實及理由
-一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。
-二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。（原告可提出113年2月提款紀錄佐證資金流動，詳參原證2）
-三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。
-四、爰依民法第478條、第229條第1項、第233條第1項等相關規定提起本訴，狀請 鈞院鑒核，賜判如訴之聲明，以維權益。
-
-　　證據
-原證1：LINE對話紀錄截圖乙份。
-原證2：原告113年2月提款紀錄影本乙份。
-
-謹　狀
-臺灣臺北地方法院民事庭　公鑒
-
-中華民國 ${new Date().getFullYear() - 1911} 年 ${new Date().getMonth() + 1} 月 ${new Date().getDate()} 日
-
-具狀人　林大明 （簽名或蓋章）
-`
-                     };
-                     const finalOutput = processLegalDocumentText(testResponse); // Use the extractor
-                     saveDocumentToLocalStorage(finalOutput);
-                     documentContent.textContent = finalOutput;
-                     modal.style.display = 'block';
-                     log('本機測試訴狀已生成並顯示', 'test');
-                     showNotification('本機測試訴狀已生成！', 'success');
-                     setupButtons();
-                 }, 1500);
-            }
-
-            function resetForm() {
-                 if (confirm('您確定要清除所有已填寫的欄位嗎？')) {
-                     log('執行表單重置', 'ui');
-                     form.reset();
-                     clearErrors();
-                     updateAiButtonState();
-                     showNotification('表單欄位已清除', 'info');
-                 }
-             }
-
-            // --- AI Summarize Button Logic (MODIFIED) ---
+            // --- AI Summarize Button Logic (MODIFIED to include Case Title) ---
             function updateAiButtonState() {
                 if (!caseProcessTextarea || !aiSummarizeButtonContainer) return;
                 const processValue = caseProcessTextarea.value.trim();
                 aiSummarizeButtonContainer.innerHTML = '';
                 if (processValue) {
                     const aiButton = createButton(
-                        'aiSummarizeBtn',
-                        'AI 統整',
-                        'wand-magic-sparkles',
-                        'btn-accent', // Use the specific CSS class for styling
-                        triggerAiSummarize,
-                        false, // Not a submit button
-                        false // Don't apply btn-uniform by default
+                        'aiSummarizeBtn', 'AI 統整', 'wand-magic-sparkles', 'btn-accent', triggerAiSummarize, false, false
                     );
                     aiSummarizeButtonContainer.appendChild(aiButton);
                 }
             }
 
-            // --- MODIFIED triggerAiSummarize Function ---
+            // --- *** MODIFIED triggerAiSummarize Function *** ---
             async function triggerAiSummarize() {
-                 // 1. Get Case Process text
-                 const processText = caseProcessTextarea.value.trim();
-                 if (!processText) {
-                     showNotification('請先在「案件詳細經過」欄位填寫內容', 'warning');
-                     caseProcessTextarea.focus();
-                     return;
-                 }
+                // 1. Get Case Process text
+                const processText = caseProcessTextarea.value.trim();
+                if (!processText) {
+                    showNotification('請先在「案件詳細經過」欄位填寫內容', 'warning');
+                    caseProcessTextarea.focus();
+                    return;
+                }
 
-                 // 2. Get Case Title text
-                 const caseTitleInput = document.getElementById('caseTitle');
-                 const caseTitleText = caseTitleInput ? caseTitleInput.value.trim() : '';
-                 if (!caseTitleText) {
-                     showNotification('請先填寫「案件案由」欄位', 'warning');
-                     showError('caseTitle', 'AI 統整需要案件案由'); // Show error near the field
-                     caseTitleInput?.focus();
-                     return; // Stop if title is missing
-                 }
-                 // Clear potential previous error on caseTitle if it's now filled
-                 const caseTitleErrorElement = document.getElementById('caseTitle-error');
-                 if (caseTitleErrorElement && caseTitleErrorElement.style.display !== 'none') {
-                     caseTitleErrorElement.style.display = 'none';
-                     caseTitleInput?.classList.remove('error');
-                 }
+                // 2. Get Case Title text (** NEW **)
+                // const caseTitleInput = document.getElementById('caseTitle'); // Already defined globally
+                const caseTitleText = caseTitleInput ? caseTitleInput.value.trim() : '';
+                if (!caseTitleText) {
+                    showNotification('請先填寫「案件案由」欄位', 'warning');
+                    showError('caseTitle', 'AI 統整需要案件案由'); // Show error near the field
+                    caseTitleInput?.focus();
+                    return; // Stop if title is missing
+                }
+                // Clear potential previous error on caseTitle if it's now filled
+                 clearErrors(); // Clear all errors for simplicity, or target specific one:
+                // const caseTitleErrorElement = document.getElementById('caseTitle-error');
+                // if (caseTitleErrorElement && caseTitleErrorElement.style.display !== 'none') {
+                //     caseTitleErrorElement.style.display = 'none';
+                //     caseTitleInput?.classList.remove('error');
+                // }
 
 
-                 // 3. Check Webhook URL validity
-                 if (!aiWebhookUrl || aiWebhookUrl === 'YOUR_N8N_AI_WEBHOOK_URL_HERE') {
-                     showNotification('AI 統整功能未設定或設定錯誤', 'error');
-                     log('AI 統整失敗：Webhook URL 未設定或無效', 'error');
-                     showError('caseProcess', 'AI 功能設定錯誤');
-                     return;
-                 }
+                // 3. Check Webhook URL validity
+                if (!aiWebhookUrl || aiWebhookUrl === 'YOUR_N8N_AI_WEBHOOK_URL_HERE') { // Also check placeholder
+                    showNotification('AI 統整功能未設定或設定錯誤', 'error');
+                    log('AI 統整失敗：Webhook URL 未設定或無效', 'error');
+                    showError('caseProcess', 'AI 功能設定錯誤'); // Show error on related field
+                    return;
+                }
 
                 // 4. Handle Button State
                 const aiButton = document.getElementById('aiSummarizeBtn');
-                let originalButtonHTML = ''; // Store full HTML
+                let originalButtonHTML = ''; // Store full HTML to restore icon+text
                  if (aiButton) {
                      originalButtonHTML = aiButton.innerHTML;
                      aiButton.disabled = true;
@@ -1375,7 +1093,7 @@
                 showNotification('正在請求 AI 統整，請稍候...', 'info');
 
                 try {
-                    // 5. Create Payload with both fields
+                    // 5. Create Payload with both fields (** MODIFIED **)
                     const payload = {
                         caseTitle: caseTitleText,   // Include Case Title
                         caseProcess: processText    // Include Case Process
@@ -1383,7 +1101,7 @@
                     log('發送到 AI Webhook 的 Payload:', 'debug');
                     if(DEBUG_MODE) console.log("AI Payload:", JSON.stringify(payload, null, 2));
 
-                    // 6. Make Fetch Request
+                    // 6. Make Fetch Request (** MODIFIED body **)
                     const response = await fetch(aiWebhookUrl, {
                         method: 'POST',
                         headers: {
@@ -1415,18 +1133,12 @@
                     const summary = result?.summary || result?.output || result?.text; // Try common keys
                     if (summary && typeof summary === 'string') {
                          const factsTextarea = document.getElementById('facts');
-                         // Example: Prepend summary to facts
                          factsTextarea.value = `【AI 摘要】:\n${summary.trim()}\n\n----------\n【原填寫之事實及理由】:\n` + factsTextarea.value;
                          showNotification('AI 已將統整摘要附加到「事實及理由」欄位前方', 'success', 7000);
                          factsTextarea.focus();
-                         // Optionally clear the caseProcess field after successful summary
-                         // caseProcessTextarea.value = '';
-                         // updateAiButtonState(); // Hide button if cleared
                      } else {
                          showNotification('AI 統整請求成功，但未收到預期格式的回應摘要', 'warning');
                          log('AI 回應格式不符預期或無 summary/output/text 欄位', 'warning');
-                         // Maybe display raw result?
-                         // document.getElementById('facts').value += `\n\n【AI原始回應】：\n${JSON.stringify(result, null, 2)}`;
                      }
 
                 } catch (error) {
@@ -1442,159 +1154,44 @@
                          aiButton.innerHTML = originalButtonHTML; // Restore original button content
                      }
                 }
-            }
+            } // --- END of MODIFIED triggerAiSummarize Function ---
 
 
             // --- Main Form Submission Handler ---
             function handleFormSubmit(e) {
-                e.preventDefault();
-                log('接收到表單提交請求', 'ui');
-                if (!validateForm()) {
-                    showNotification('提交失敗，請檢查表單紅色標示的欄位', 'error');
-                    return;
-                }
-                const formData = {
-                    caseType: document.getElementById('caseType').value,
-                    caseNumber: document.getElementById('caseNumber').value || null,
-                    courtInfo: { name: document.getElementById('courtName').value, branch: document.getElementById('branchName').value || null },
-                    parties: {
-                      plaintiff: { info: document.getElementById('plaintiff').value, representative: document.getElementById('plaintiffRepresentative').value || null },
-                      defendant: { info: document.getElementById('defendant').value, representative: document.getElementById('defendantRepresentative').value || null }
-                    },
-                    caseDetails: {
-                      title: document.getElementById('caseTitle').value,
-                      requests: document.getElementById('requests').value.split('\n').filter(line => line.trim()),
-                      factsAndReasons: document.getElementById('facts').value, // Keep raw string?
-                       factsAndReasonsList: document.getElementById('facts').value.split('\n').filter(line => line.trim()),
-                      caseProcess: document.getElementById('caseProcess').value || null,
-                      evidence: document.getElementById('evidence').value.split('\n').filter(line => line.trim()),
-                      laws: document.getElementById('laws').value ? document.getElementById('laws').value.split('\n').filter(line => line.trim()) : [],
-                      precedents: document.getElementById('precedents').value ? document.getElementById('precedents').value.split('\n').filter(line => line.trim()) : []
-                    },
-                    contact: { email: document.getElementById('email').value, phone: document.getElementById('phone').value || null },
-                    metadata: {
-                      submissionTimestamp: new Date().toISOString(),
-                      formVersion: window.debugInfo.version || 'unknown',
-                      userId: window.debugInfo.user || 'unknown',
-                      system: "wtlee328-legal-doc-gen"
-                    }
-                };
-                log('表單數據已收集完畢', 'data');
-                if (DEBUG_MODE) console.log("準備發送的數據:", JSON.stringify(formData, null, 2));
-
-                showLoading("正在生成訴狀，請稍候...", 45);
-                let secondsLeft = 45;
-                const timerInterval = setInterval(() => {
-                    secondsLeft--;
-                    if (secondsLeft > 0) { estimatedTimeP.textContent = `預計剩餘： ${secondsLeft} 秒`; }
-                    else { estimatedTimeP.textContent = `仍在處理中，請耐心等候...`; clearInterval(timerInterval); }
-                }, 1000);
-
-                fetch(generateWebhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Request-ID': `gen-${Date.now()}-${Math.random().toString(16).substring(2, 8)}` },
-                    body: JSON.stringify(formData)
-                })
-                .then(async response => {
-                    clearInterval(timerInterval);
-                    log(`收到 n8n (生成) 回應，狀態: ${response.status}`, 'response');
-                    if (!response.ok) {
-                         let errorBody = await response.text(); log(`伺服器錯誤回應內容: ${errorBody}`, 'error');
-                        throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}. ${errorBody || '無詳細錯誤訊息'}`);
-                    }
-                    return response.text();
-                })
-                .then(text => {
-                    log("收到原始生成回應文本", 'debug'); if (DEBUG_MODE) console.log("Raw Response Text:", text);
-                    let data; try { data = JSON.parse(text); } catch (e) { log("生成回應不是有效的 JSON，將直接使用收到的文本", 'debug'); data = text; }
-                    return data;
-                })
-                .then(data => {
-                    hideLoading(); log("收到最終生成回應數據", 'response'); if (DEBUG_MODE) console.log("Processed Response Data:", data);
-                    const finalOutput = processLegalDocumentText(data); // Use the robust extractor
-                    log("最終訴狀文本已處理完成", 'process'); if (DEBUG_MODE) console.log("Final Output for Display:", finalOutput);
-                    saveDocumentToLocalStorage(finalOutput);
-                    documentContent.textContent = finalOutput || "未能生成內容，請檢查回應。";
-                    modal.style.display = 'block'; showNotification('訴狀已成功生成！', 'success');
-                    setupButtons();
-                })
-                .catch(error => {
-                    clearInterval(timerInterval); hideLoading(); console.error('Form Submission/Generation Error:', error);
-                    log(`生成請求失敗: ${error.message}`, 'error');
-                    showNotification(`生成訴狀時發生錯誤：${error.message || '未知錯誤'}`, 'error', 8000);
-                });
+                e.preventDefault(); log('接收到表單提交請求', 'ui');
+                if (!validateForm()) { showNotification('提交失敗，請檢查表單紅色標示的欄位', 'error'); return; }
+                const formData = { caseType: document.getElementById('caseType').value, caseNumber: document.getElementById('caseNumber').value || null, courtInfo: { name: document.getElementById('courtName').value, branch: document.getElementById('branchName').value || null }, parties: { plaintiff: { info: document.getElementById('plaintiff').value, representative: document.getElementById('plaintiffRepresentative').value || null }, defendant: { info: document.getElementById('defendant').value, representative: document.getElementById('defendantRepresentative').value || null } }, caseDetails: { title: document.getElementById('caseTitle').value, requests: document.getElementById('requests').value.split('\n').filter(line => line.trim()), factsAndReasons: document.getElementById('facts').value, factsAndReasonsList: document.getElementById('facts').value.split('\n').filter(line => line.trim()), caseProcess: document.getElementById('caseProcess').value || null, evidence: document.getElementById('evidence').value.split('\n').filter(line => line.trim()), laws: document.getElementById('laws').value ? document.getElementById('laws').value.split('\n').filter(line => line.trim()) : [], precedents: document.getElementById('precedents').value ? document.getElementById('precedents').value.split('\n').filter(line => line.trim()) : [] }, contact: { email: document.getElementById('email').value, phone: document.getElementById('phone').value || null }, metadata: { submissionTimestamp: new Date().toISOString(), formVersion: window.debugInfo.version || 'unknown', userId: window.debugInfo.user || 'unknown', system: "wtlee328-legal-doc-gen" } };
+                log('表單數據已收集完畢', 'data'); if (DEBUG_MODE) console.log("準備發送的數據:", JSON.stringify(formData, null, 2));
+                showLoading("正在生成訴狀，請稍候...", 45); let secondsLeft = 45; const timerInterval = setInterval(() => { secondsLeft--; if (secondsLeft > 0) { estimatedTimeP.textContent = `預計剩餘： ${secondsLeft} 秒`; } else { estimatedTimeP.textContent = `仍在處理中，請耐心等候...`; clearInterval(timerInterval); } }, 1000);
+                fetch(generateWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Request-ID': `gen-${Date.now()}-${Math.random().toString(16).substring(2, 8)}` }, body: JSON.stringify(formData) })
+                .then(async response => { clearInterval(timerInterval); log(`收到 n8n (生成) 回應，狀態: ${response.status}`, 'response'); if (!response.ok) { let errorBody = await response.text(); log(`伺服器錯誤回應內容: ${errorBody}`, 'error'); throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}. ${errorBody || '無詳細錯誤訊息'}`); } return response.text(); })
+                .then(text => { log("收到原始生成回應文本", 'debug'); if (DEBUG_MODE) console.log("Raw Response Text:", text); let data; try { data = JSON.parse(text); } catch (e) { log("生成回應不是有效的 JSON，將直接使用收到的文本", 'debug'); data = text; } return data; })
+                .then(data => { hideLoading(); log("收到最終生成回應數據", 'response'); if (DEBUG_MODE) console.log("Processed Response Data:", data); const finalOutput = processLegalDocumentText(data); log("最終訴狀文本已處理完成", 'process'); if (DEBUG_MODE) console.log("Final Output for Display:", finalOutput); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput || "未能生成內容，請檢查回應。"; modal.style.display = 'block'; showNotification('訴狀已成功生成！', 'success'); setupButtons(); })
+                .catch(error => { clearInterval(timerInterval); hideLoading(); console.error('Form Submission/Generation Error:', error); log(`生成請求失敗: ${error.message}`, 'error'); showNotification(`生成訴狀時發生錯誤：${error.message || '未知錯誤'}`, 'error', 8000); });
             }
 
-
-            // --- Modal and Document Actions (Unchanged) ---
-             if (closeModalBtn) { closeModalBtn.addEventListener('click', () => modal.style.display = 'none'); }
-             window.addEventListener('click', (event) => { if (event.target === modal) { modal.style.display = 'none'; } });
-             window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && modal.style.display === 'block') { modal.style.display = 'none'; } });
-             if (copyBtn) { copyBtn.addEventListener('click', () => { /* ... copy logic ... */ }); }
-             if (printBtn) { printBtn.addEventListener('click', () => { /* ... print logic ... */ }); }
-             if (downloadBtn) { downloadBtn.addEventListener('click', () => { /* ... download logic ... */ }); }
-             if (emailBtn) { emailBtn.addEventListener('click', () => { /* ... email logic ... */ }); }
-             // (Include the actual copy/print/download/email logic from previous versions here if needed)
+            // --- Modal and Document Actions (Simplified for brevity, retain full logic) ---
+            if (closeModalBtn) { closeModalBtn.addEventListener('click', () => modal.style.display = 'none'); }
+            window.addEventListener('click', (event) => { if (event.target === modal) { modal.style.display = 'none'; } });
+            window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && modal.style.display === 'block') { modal.style.display = 'none'; } });
+            // Add back the full logic for copyBtn, printBtn, downloadBtn, emailBtn here...
              // Copy Logic Example:
-             if (copyBtn) {
-                 copyBtn.addEventListener('click', () => {
-                     const textToCopy = documentContent.textContent;
-                     if (!textToCopy) { showNotification('沒有內容可複製', 'warning'); return; }
-                     navigator.clipboard.writeText(textToCopy).then(() => {
-                         showNotification('訴狀內容已複製到剪貼簿', 'success'); log('內容已複製', 'action');
-                     }).catch(err => {
-                         showNotification('複製失敗，瀏覽器可能不支援或未授權', 'error'); log(`複製失敗: ${err.message}`, 'error');
-                     });
-                 });
-             }
+             if (copyBtn) { copyBtn.addEventListener('click', () => { const textToCopy = documentContent.textContent; if (!textToCopy) { showNotification('沒有內容可複製', 'warning'); return; } navigator.clipboard.writeText(textToCopy).then(() => { showNotification('訴狀內容已複製到剪貼簿', 'success'); log('內容已複製', 'action'); }).catch(err => { showNotification('複製失敗，瀏覽器可能不支援或未授權', 'error'); log(`複製失敗: ${err.message}`, 'error'); }); }); }
              // Print Logic Example:
-             if (printBtn) {
-                 printBtn.addEventListener('click', () => {
-                      log('觸發列印', 'action'); modal.classList.add('printing'); window.print();
-                      setTimeout(() => modal.classList.remove('printing'), 500);
-                 });
-            }
-            // Download Logic Example:
-             if (downloadBtn) {
-                 downloadBtn.addEventListener('click', () => {
-                     try {
-                         const text = documentContent.textContent; if (!text) { showNotification('沒有內容可下載', 'warning'); return; }
-                         const caseType = document.getElementById('caseType').value || '訴狀'; const today = new Date().toISOString().slice(0, 10);
-                         const filename = `${caseType}_${today}.txt`; const blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
-                         const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
-                         document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href);
-                         showNotification(`已下載文件：${filename}`, 'success'); log(`訴狀已下載為 ${filename}`, 'action');
-                     } catch (e) { log(`下載失敗: ${e.message}`, 'error'); showNotification('下載文件時發生錯誤', 'error'); }
-                 });
-             }
+             if (printBtn) { printBtn.addEventListener('click', () => { log('觸發列印', 'action'); modal.classList.add('printing'); window.print(); setTimeout(() => modal.classList.remove('printing'), 500); }); }
+             // Download Logic Example:
+             if (downloadBtn) { downloadBtn.addEventListener('click', () => { try { const text = documentContent.textContent; if (!text) { showNotification('沒有內容可下載', 'warning'); return; } const caseType = document.getElementById('caseType').value || '訴狀'; const today = new Date().toISOString().slice(0, 10); const filename = `${caseType}_${today}.txt`; const blob = new Blob([text], {type: 'text/plain;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); showNotification(`已下載文件：${filename}`, 'success'); log(`訴狀已下載為 ${filename}`, 'action'); } catch (e) { log(`下載失敗: ${e.message}`, 'error'); showNotification('下載文件時發生錯誤', 'error'); } }); }
              // Email Logic Example:
-             if (emailBtn) {
-                 emailBtn.addEventListener('click', () => {
-                     const userEmail = document.getElementById('email').value; const docText = documentContent.textContent;
-                     if (!userEmail || !validateEmail(userEmail)) { showNotification('請先在主表單填寫有效的電子郵件地址', 'warning'); showError('email', '請填寫有效的電子郵件以寄送'); return; }
-                     if (!docText) { showNotification('沒有訴狀內容可寄送', 'warning'); return; }
-                     log(`準備模擬發送郵件至 ${userEmail}`, 'action'); showNotification(`即將模擬發送訴狀至：${userEmail}`, 'info');
-                     emailBtn.disabled = true; emailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 寄送中...';
-                     setTimeout(() => {
-                         emailBtn.disabled = false; emailBtn.innerHTML = '<i class="fas fa-envelope"></i> 寄送Email';
-                         showNotification(`訴狀已「模擬」發送至您的信箱：${userEmail}`, 'success'); log(`模擬郵件已發送至 ${userEmail}`, 'action');
-                     }, 2500);
-                 });
-             }
+             if (emailBtn) { emailBtn.addEventListener('click', () => { const userEmail = document.getElementById('email').value; const docText = documentContent.textContent; if (!userEmail || !validateEmail(userEmail)) { showNotification('請先在主表單填寫有效的電子郵件地址', 'warning'); showError('email', '請填寫有效的電子郵件以寄送'); return; } if (!docText) { showNotification('沒有訴狀內容可寄送', 'warning'); return; } log(`準備模擬發送郵件至 ${userEmail}`, 'action'); showNotification(`即將模擬發送訴狀至：${userEmail}`, 'info'); emailBtn.disabled = true; emailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 寄送中...'; setTimeout(() => { emailBtn.disabled = false; emailBtn.innerHTML = '<i class="fas fa-envelope"></i> 寄送Email'; showNotification(`訴狀已「模擬」發送至您的信箱：${userEmail}`, 'success'); log(`模擬郵件已發送至 ${userEmail}`, 'action'); }, 2500); }); }
 
 
             // --- Initialization ---
              log(`系統初始化 - v${window.debugInfo.version}`, 'init');
              setupButtons();
-             if (caseProcessTextarea) {
-                 caseProcessTextarea.addEventListener('input', updateAiButtonState);
-                 updateAiButtonState();
-             } else { log('未找到案件經過欄位 (caseProcess textarea)', 'warning'); }
-             document.addEventListener('keydown', (e) => {
-                 if (e.altKey && e.key === 'd') {
-                     debugPanel.classList.toggle('active'); log(`調試面板 ${debugPanel.classList.contains('active') ? '開啟' : '關閉'}`, 'ui'); e.preventDefault();
-                 }
-             });
+             if (caseProcessTextarea) { caseProcessTextarea.addEventListener('input', updateAiButtonState); updateAiButtonState(); }
+             else { log('未找到案件經過欄位 (caseProcess textarea)', 'warning'); }
+             document.addEventListener('keydown', (e) => { if (e.altKey && e.key === 'd') { debugPanel.classList.toggle('active'); log(`調試面板 ${debugPanel.classList.contains('active') ? '開啟' : '關閉'}`, 'ui'); e.preventDefault(); } });
              showNotification('按下 Alt+D 可顯示/隱藏調試面板', 'info', 7000);
 
         }); // End DOMContentLoaded
