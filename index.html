@@ -919,7 +919,8 @@
                         <textarea id="caseProcess" name="caseProcess" rows="6"
                             placeholder="請詳細描述案件從發生到現在的完整經過..."></textarea>
                         <div id="aiSummarizeButtonContainer">
-                            <!-- AI Summarize button will be dynamically added here by JS --></div>
+                            <!-- AI Summarize button will be dynamically added here by JS -->
+                        </div>
                         <div class="error-message" id="caseProcess-error"></div>
                     </div>
                     <div class="form-group">
@@ -1121,7 +1122,49 @@
 
             // --- Button Creation & Setup ---
             function createButton(id, text, icon, styleClass, clickHandler, isSubmit = false, isUniform = true) { const button = document.createElement('button'); button.id = id; button.type = isSubmit ? 'submit' : 'button'; button.className = `btn ${styleClass}` + (isUniform ? ' btn-uniform' : ''); button.innerHTML = `<i class="fas fa-${icon}"></i> ${text}`; if (clickHandler) { button.addEventListener('click', clickHandler); } return button; }
-            function setupButtons() { buttonsContainer.innerHTML = ''; const leftButtonGroup = document.createElement('div'); const demoButton = createButton('demoBtn', '填入示範', 'magic', 'secondary-btn', fillDemoData); const testButton = createButton('testBtn', '本機測試', 'vial', 'btn-success', runTest); const resetButton = createButton('resetBtn', '清除重填', 'undo', 'btn-danger', resetForm); leftButtonGroup.appendChild(demoButton); leftButtonGroup.appendChild(testButton); leftButtonGroup.appendChild(resetButton); const savedData = loadDocumentFromLocalStorage(); if (savedData && savedData.timestamp) { const timestamp = new Date(savedData.timestamp); const now = new Date(); const diffMinutes = Math.floor((now - timestamp) / (1000 * 60)); if (diffMinutes < 60) { const restoreButton = createButton('restoreBtn', '恢復上次', 'history', 'btn-info', () => { if (savedData.content) { const processedText = processLegalDocumentText(savedData.content); documentContent.textContent = processedText; modal.style.display = 'block'; log(`從本地存儲恢復書狀 (生成於 ${diffMinutes} 分鐘前)`, 'storage'); showNotification('已恢復上次生成的書狀內容', 'success'); } else { showNotification('找不到上次的內容', 'warning'); } }); leftButtonGroup.appendChild(restoreButton); log(`發現 ${diffMinutes} 分鐘前生成的本地存儲數據`, 'info'); } } const submitButton = createButton('submitBtn', '生成書狀', 'file-alt', 'btn-primary', null, true); buttonsContainer.appendChild(leftButtonGroup); buttonsContainer.appendChild(submitButton); form.removeEventListener('submit', handleFormSubmit); form.addEventListener('submit', handleFormSubmit); }
+
+            function setupButtons() {
+                buttonsContainer.innerHTML = '';
+                const leftButtonGroup = document.createElement('div');
+
+                // MODIFIED HERE: Changed text and class for the four buttons
+                const demoButton = createButton('demoBtn', '示範', 'magic', 'secondary-btn', fillDemoData);
+                const testButton = createButton('testBtn', '測試', 'vial', 'secondary-btn', runTest); // Changed class
+                const resetButton = createButton('resetBtn', '清除', 'undo', 'secondary-btn', resetForm); // Changed class
+
+                leftButtonGroup.appendChild(demoButton);
+                leftButtonGroup.appendChild(testButton);
+                leftButtonGroup.appendChild(resetButton);
+
+                const savedData = loadDocumentFromLocalStorage();
+                if (savedData && savedData.timestamp) {
+                    const timestamp = new Date(savedData.timestamp);
+                    const now = new Date();
+                    const diffMinutes = Math.floor((now - timestamp) / (1000 * 60));
+                    if (diffMinutes < 60) {
+                        const restoreButton = createButton('restoreBtn', '恢復', 'history', 'secondary-btn', () => { // Changed text and class
+                            if (savedData.content) {
+                                const processedText = processLegalDocumentText(savedData.content);
+                                documentContent.textContent = processedText;
+                                modal.style.display = 'block';
+                                log(`從本地存儲恢復書狀 (生成於 ${diffMinutes} 分鐘前)`, 'storage');
+                                showNotification('已恢復上次生成的書狀內容', 'success');
+                            } else {
+                                showNotification('找不到上次的內容', 'warning');
+                            }
+                        });
+                        leftButtonGroup.appendChild(restoreButton);
+                        log(`發現 ${diffMinutes} 分鐘前生成的本地存儲數據`, 'info');
+                    }
+                }
+                // END MODIFICATIONS
+
+                const submitButton = createButton('submitBtn', '生成書狀', 'file-alt', 'btn-primary', null, true); // Keep this as primary
+                buttonsContainer.appendChild(leftButtonGroup);
+                buttonsContainer.appendChild(submitButton);
+                form.removeEventListener('submit', handleFormSubmit);
+                form.addEventListener('submit', handleFormSubmit);
+            }
 
             // --- Button Action Handlers ---
             function fillDemoData() { log('正在填入示範數據...', 'ui'); clearErrors(); caseTypeSelect.value = '起訴狀'; handleCaseTypeChange(); document.getElementById('courtName').value = '臺灣臺北地方法院'; document.getElementById('plaintiff').value = '林大明\n身分證字號：A123456789\n住址：臺北市信義區市府路1號\n電話：0911-111-111'; document.getElementById('defendant').value = '王小華\n身分證字號：B987654321\n住址：新北市板橋區縣民大道二段7號\n電話：0922-222-222'; document.getElementById('caseTitle').value = '請求返還借款'; document.getElementById('caseProcess').value = '被告王小華於民國113年2月1日向原告林大明開口借款新台幣十萬元整，聲稱家中有急用，約定同年5月1日還款。原告基於多年情誼，於113年2月5日以現金交付予被告。然屆至清償期，被告並未還款。原告於6月1日以LINE訊息催討，被告已讀不回。後續多次以電話聯繫，被告均未接聽或掛斷。'; document.getElementById('requests').value = '一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。'; document.getElementById('facts').value = '一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條等相關規定提起本訴，請求判如訴之聲明。'; document.getElementById('evidence').value = '原證1：LINE對話紀錄截圖乙份\n原證2：原告113年2月提款紀錄（佐證資金來源）'; document.getElementById('laws').value = '民法第474條\n民法第478條\n民法第229條第1項\n民法第233條第1項'; document.getElementById('precedents').value = ''; document.getElementById('email').value = 'demo.user@example.com'; document.getElementById('phone').value = '0912-345678'; updateAiButtonState(); showNotification('已填入示範數據', 'success'); }
