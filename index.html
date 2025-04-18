@@ -18,7 +18,7 @@
         window.debugInfo = {
             logRequests: true,
             logResponses: true,
-            version: "wtlee328-debug-2025-04-18-fix1", // Updated version/date
+            version: "wtlee328-debug-2025-04-18-json-populate", // Updated version/date
             user: "wtlee328",
             timestamp: new Date().toISOString() // Use current time
         };
@@ -498,150 +498,27 @@
 
         /* --- Print Styles --- */
         @media print {
-            body {
-                background-color: white; /* Ensure white background for printing */
-            }
-            body * {
-                visibility: hidden; /* Hide everything */
-            }
-            .modal, .modal *, .document-area, .document-area * {
-                visibility: visible; /* Show only modal and its content */
-            }
-            .modal {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: auto;
-                margin: 0;
-                padding: 0;
-                overflow: visible;
-                background-color: white;
-                box-shadow: none;
-                border: none;
-                animation: none; /* Disable animations */
-            }
-             .modal-content {
-                width: 100%;
-                max-width: 100%;
-                margin: 0;
-                padding: 20px; /* Add some padding for print */
-                box-shadow: none;
-                border: none;
-                max-height: none; /* Remove height limit */
-                animation: none; /* Disable animations */
-            }
-            .modal-header, .document-buttons, .close {
-                display: none !important; /* Hide non-content elements */
-            }
-            .document-area {
-                border: none;
-                padding: 0;
-                margin: 0;
-                white-space: pre-wrap !important; /* Crucial for preserving format */
-                overflow: visible; /* Show all content */
-                background-color: white;
-                font-size: 12pt; /* Adjust print font size */
-                line-height: 1.6;
-            }
-            header, footer, .container > .card:not(.modal), .debug-panel, .notification, .loading-overlay {
-                 display: none; /* Ensure other parts are hidden */
-            }
+            body { background-color: white; } body * { visibility: hidden; }
+            .modal, .modal *, .document-area, .document-area * { visibility: visible; }
+            .modal { position: absolute; left: 0; top: 0; width: 100%; height: auto; margin: 0; padding: 0; overflow: visible; background-color: white; box-shadow: none; border: none; animation: none; }
+            .modal-content { width: 100%; max-width: 100%; margin: 0; padding: 20px; box-shadow: none; border: none; max-height: none; animation: none; }
+            .modal-header, .document-buttons, .close { display: none !important; }
+            .document-area { border: none; padding: 0; margin: 0; white-space: pre-wrap !important; overflow: visible; background-color: white; font-size: 12pt; line-height: 1.6; }
+            header, footer, .container > .card:not(.modal), .debug-panel, .notification, .loading-overlay { display: none; }
         }
 
         /* --- Debug Panel --- */
-        .debug-panel {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background-color: rgba(0, 0, 0, 0.85); /* Darker */
-            color: #0f0; /* Bright green */
-            padding: 15px;
-            font-family: 'Consolas', 'Monaco', monospace; /* Monospace font */
-            font-size: 13px; /* Slightly larger */
-            max-width: 350px; /* Wider */
-            max-height: 250px; /* Taller */
-            overflow: auto;
-            z-index: 9999;
-            display: none; /* Hidden by default */
-            border-radius: 4px;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3); /* Green glow */
-        }
-        .debug-panel.active { display: block; }
-        .debug-panel .log-entry { /* Style log entries */
-             border-bottom: 1px dotted #333;
-             padding: 2px 0;
-             word-break: break-all; /* Wrap long lines */
-        }
-        .debug-panel .log-entry:last-child {
-             border-bottom: none;
-        }
-        .debug-panel .log-entry.error { color: #f88; } /* Red for errors */
-        .debug-panel .log-entry.warning { color: #ff8; } /* Yellow for warnings */
-        .debug-panel .log-entry.request { color: #8bf; } /* Blue for requests */
-        .debug-panel .log-entry.response { color: #8f8; } /* Lighter green for responses */
-
+        .debug-panel { position: fixed; bottom: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.85); color: #0f0; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; max-width: 350px; max-height: 250px; overflow: auto; z-index: 9999; display: none; border-radius: 4px; box-shadow: 0 0 10px rgba(0, 255, 0, 0.3); }
+        .debug-panel.active { display: block; } .debug-panel .log-entry { border-bottom: 1px dotted #333; padding: 2px 0; word-break: break-all; } .debug-panel .log-entry:last-child { border-bottom: none; } .debug-panel .log-entry.error { color: #f88; } .debug-panel .log-entry.warning { color: #ff8; } .debug-panel .log-entry.request { color: #8bf; } .debug-panel .log-entry.response { color: #8f8; }
 
         /* --- Responsive Styles --- */
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-                margin-top: 10px;
-            }
-            .card {
-                padding: 1rem;
-            }
-            h2 { font-size: 1.4rem; }
-            .form-row {
-                flex-direction: column;
-                gap: 0; /* Remove gap, rely on form-col margin */
-            }
-            .form-col {
-                width: 100%;
-                margin-bottom: 1.2rem; /* Add margin between cols in mobile */
-            }
-             .form-col:last-child {
-                margin-bottom: 0; /* No margin for last col in a row */
-            }
-
-            .buttons-container {
-                 flex-direction: column; /* Stack button groups */
-                 align-items: stretch; /* Make groups/buttons full width */
-                 gap: 15px; /* Increase gap between stacked groups */
-            }
-            .buttons-container > div:first-child { /* Left button group */
-                flex-direction: column; /* Stack demo/test/reset/restore */
-                gap: 10px;
-            }
-             /* Make all buttons full width on mobile */
-             .buttons-container button,
-             .buttons-container .btn-uniform {
-                 width: 100% !important;
-                 min-width: auto !important; /* Override min-width */
-                 margin: 0 !important; /* Reset margins */
-             }
-
-            .modal-content {
-                width: 95%;
-                margin: 5% auto;
-                padding: 15px 20px; /* Adjust padding */
-                max-height: 85vh; /* Slightly less height */
-            }
-             .document-buttons {
-                 justify-content: center; /* Center buttons in modal on mobile */
-             }
-             .document-buttons button {
-                  flex-grow: 1; /* Allow buttons to grow */
-                  min-width: 100px; /* Smaller min-width on mobile */
-             }
-
-            #aiSummarizeButtonContainer {
-                text-align: center; /* Center AI button */
-            }
-             #aiSummarizeBtn {
-                width: auto; /* Don't force AI button to full width */
-                display: inline-block; /* Override flex */
-            }
+            .container { padding: 10px; margin-top: 10px; } .card { padding: 1rem; } h2 { font-size: 1.4rem; }
+            .form-row { flex-direction: column; gap: 0; } .form-col { width: 100%; margin-bottom: 1.2rem; } .form-col:last-child { margin-bottom: 0; }
+            .buttons-container { flex-direction: column; align-items: stretch; gap: 15px; } .buttons-container > div:first-child { flex-direction: column; gap: 10px; }
+            .buttons-container button, .buttons-container .btn-uniform { width: 100% !important; min-width: auto !important; margin: 0 !important; }
+            .modal-content { width: 95%; margin: 5% auto; padding: 15px 20px; max-height: 85vh; } .document-buttons { justify-content: center; } .document-buttons button { flex-grow: 1; min-width: 100px; }
+            #aiSummarizeButtonContainer { text-align: center; } #aiSummarizeBtn { width: auto; display: inline-block; }
         }
 
     </style>
@@ -828,13 +705,17 @@
 
                     <!-- Applicable Laws -->
                     <div class="form-group">
-                        <label for="laws">適用法條 (選填)</label>
+                        <label for="laws">適用法條 (選填)
+                            <span class="tooltip"><i class="fas fa-question-circle"></i>
+                                <span class="tooltip-text">請列出您認為適用的主要法條，每條一行。</span>
+                            </span>
+                        </label>
                         <textarea id="laws" name="laws" rows="3" placeholder="例：
 民法第474條
 民法第478條
 民法第229條第1項
 民事訴訟法第78條"></textarea>
-                         <span class="helper-text">可不填，系統可能依案由自動建議</span>
+                         <span class="helper-text">可不填，由 AI 統整或生成訴狀時判斷</span>
                     </div>
 
                     <!-- Precedents / Rulings -->
@@ -940,7 +821,7 @@
             const caseProcessTextarea = document.getElementById('caseProcess');
             const aiSummarizeButtonContainer = document.getElementById('aiSummarizeButtonContainer');
             const estimatedTimeP = document.getElementById('estimatedTime');
-            const caseTitleInput = document.getElementById('caseTitle'); // Added reference
+            const caseTitleInput = document.getElementById('caseTitle');
 
             // --- Configuration ---
             const generateWebhookUrl = 'https://9b0a-2600-4040-a2cb-5700-1969-dd70-68c7-8d7.ngrok-free.app/webhook/legal-document';
@@ -968,51 +849,15 @@
             }
 
             // --- UI Feedback Functions ---
-            function showNotification(message, type = 'info', duration = 5000) {
-                 if (!notification) return;
-                 notification.textContent = '';
-                 notification.className = `notification ${type}`;
-                 const icon = document.createElement('i');
-                 const iconMap = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
-                 icon.className = `fas ${iconMap[type] || 'fa-info-circle'}`;
-                 notification.appendChild(icon);
-                 notification.appendChild(document.createTextNode(` ${message}`));
-                 notification.classList.add('show');
-                 setTimeout(() => { notification.classList.remove('show'); }, duration);
-            }
-            function showLoading(message = "處理中，請稍候...", estimatedSeconds = null) {
-                 if (!loadingOverlay) return;
-                 loadingOverlay.querySelector('p:first-of-type').textContent = message;
-                 estimatedTimeP.textContent = estimatedSeconds ? `預計需時：約 ${estimatedSeconds} 秒` : '';
-                 loadingOverlay.style.display = 'flex';
-            }
-            function hideLoading() {
-                 if (loadingOverlay) loadingOverlay.style.display = 'none';
-            }
+            function showNotification(message, type = 'info', duration = 5000) { if (!notification) return; notification.textContent = ''; notification.className = `notification ${type}`; const icon = document.createElement('i'); const iconMap = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' }; icon.className = `fas ${iconMap[type] || 'fa-info-circle'}`; notification.appendChild(icon); notification.appendChild(document.createTextNode(` ${message}`)); notification.classList.add('show'); setTimeout(() => { notification.classList.remove('show'); }, duration); }
+            function showLoading(message = "處理中，請稍候...", estimatedSeconds = null) { if (!loadingOverlay) return; loadingOverlay.querySelector('p:first-of-type').textContent = message; estimatedTimeP.textContent = estimatedSeconds ? `預計需時：約 ${estimatedSeconds} 秒` : ''; loadingOverlay.style.display = 'flex'; }
+            function hideLoading() { if (loadingOverlay) loadingOverlay.style.display = 'none'; }
 
             // --- Form Validation & Error Handling ---
-            function clearErrors() {
-                 form.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-                 form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
-            }
-            function showError(fieldId, message) {
-                 const field = document.getElementById(fieldId);
-                 const errorElement = document.getElementById(`${fieldId}-error`);
-                 if (field) field.classList.add('error');
-                 if (errorElement) { errorElement.textContent = message; errorElement.style.display = 'block'; }
-                 else { log(`Error element not found for field: ${fieldId}`, 'warning'); }
-            }
+            function clearErrors() { form.querySelectorAll('.error-message').forEach(el => el.style.display = 'none'); form.querySelectorAll('.error').forEach(el => el.classList.remove('error')); }
+            function showError(fieldId, message) { const field = document.getElementById(fieldId); const errorElement = document.getElementById(`${fieldId}-error`); if (field) field.classList.add('error'); if (errorElement) { errorElement.textContent = message; errorElement.style.display = 'block'; } else { log(`Error element not found for field: ${fieldId}`, 'warning'); } }
             function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
-            function validateForm() {
-                let isValid = true; clearErrors(); log('開始表單驗證', 'validation');
-                const requiredFields = [ { id: 'caseType', message: '請選擇訴狀類型' }, { id: 'courtName', message: '請選擇法院名稱' }, { id: 'plaintiff', message: '請填寫原告資料' }, { id: 'defendant', message: '請填寫被告資料' }, { id: 'caseTitle', message: '請填寫案件案由' }, { id: 'requests', message: '請填寫訴之聲明 (請求事項)' }, { id: 'facts', message: '請填寫事實及理由' }, { id: 'evidence', message: '請填寫證據名稱及件數' }, { id: 'email', message: '請填寫有效的電子郵件' } ];
-                requiredFields.forEach(field => { const element = document.getElementById(field.id); if (!element || !element.value.trim()) { showError(field.id, field.message); log(`驗證失敗: ${field.id} - ${field.message}`, 'validation'); isValid = false; } });
-                const factsValue = document.getElementById('facts').value.trim(); if (factsValue && factsValue.split('\n').filter(line => line.trim()).length < 3) { showError('facts', '事實及理由請至少填寫3點'); log(`驗證失敗: facts - 未滿3點`, 'validation'); isValid = false; }
-                const emailValue = document.getElementById('email').value.trim(); if (emailValue && !validateEmail(emailValue)) { showError('email', '請填寫有效的電子郵件格式'); log(`驗證失敗: email - 格式錯誤`, 'validation'); isValid = false; }
-                log(`表單驗證結果: ${isValid ? '通過' : '失敗'}`, 'validation');
-                if (!isValid) { const firstError = form.querySelector('.error'); if (firstError) { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstError.focus({ preventScroll: true }); } }
-                return isValid;
-            }
+            function validateForm() { let isValid = true; clearErrors(); log('開始表單驗證', 'validation'); const requiredFields = [ { id: 'caseType', message: '請選擇訴狀類型' }, { id: 'courtName', message: '請選擇法院名稱' }, { id: 'plaintiff', message: '請填寫原告資料' }, { id: 'defendant', message: '請填寫被告資料' }, { id: 'caseTitle', message: '請填寫案件案由' }, { id: 'requests', message: '請填寫訴之聲明 (請求事項)' }, { id: 'facts', message: '請填寫事實及理由' }, { id: 'evidence', message: '請填寫證據名稱及件數' }, { id: 'email', message: '請填寫有效的電子郵件' } ]; requiredFields.forEach(field => { const element = document.getElementById(field.id); if (!element || !element.value.trim()) { showError(field.id, field.message); log(`驗證失敗: ${field.id} - ${field.message}`, 'validation'); isValid = false; } }); const factsValue = document.getElementById('facts').value.trim(); if (factsValue && factsValue.split('\n').filter(line => line.trim()).length < 3) { showError('facts', '事實及理由請至少填寫3點'); log(`驗證失敗: facts - 未滿3點`, 'validation'); isValid = false; } const emailValue = document.getElementById('email').value.trim(); if (emailValue && !validateEmail(emailValue)) { showError('email', '請填寫有效的電子郵件格式'); log(`驗證失敗: email - 格式錯誤`, 'validation'); isValid = false; } log(`表單驗證結果: ${isValid ? '通過' : '失敗'}`, 'validation'); if (!isValid) { const firstError = form.querySelector('.error'); if (firstError) { firstError.scrollIntoView({ behavior: 'smooth', block: 'center' }); firstError.focus({ preventScroll: true }); } } return isValid; }
 
             // --- Data Handling & Processing ---
             function extractActionInput(responseData) { try { if (typeof responseData === 'string') { try { responseData = JSON.parse(responseData); } catch (e) { /* Not JSON, proceed as string */ } } if (typeof responseData === 'object' && responseData !== null) { if (responseData.action === "Final Answer" && responseData.action_input) { log("提取自 action_input", "process"); return responseData.action_input; } if (responseData.output) { log("提取自 output 屬性", "process"); return responseData.output; } if (responseData.text) { log("提取自 text 屬性", "process"); return responseData.text; } } if(typeof responseData === 'string') { log("作為原始字串處理", "process"); return responseData; } log("未找到已知輸出鍵，將物件字串化", "process"); return JSON.stringify(responseData, null, 2); } catch (e) { log(`提取 action_input/output/text 時出錯: ${e.message}`, 'error'); return responseData; } }
@@ -1031,20 +876,75 @@
             function runTest() { fillDemoData(); log('開始本機測試流程...', 'test'); showNotification('使用示範數據進行本機測試...', 'info'); showLoading("模擬本機生成中...", 2); setTimeout(() => { hideLoading(); const testResponse = { output: `\n民事起訴狀（測試範本）\n案　　號： （法院自動編列）\n股　　別： （法院自動編列）\n\n原　　告　林大明\n　　　　　身分證字號：A123456789\n　　　　　住址：臺北市信義區市府路1號\n　　　　　電話：0911-111-111\n\n被　　告　王小華\n　　　　　身分證字號：B987654321\n　　　　　住址：新北市板橋區縣民大道二段7號\n　　　　　電話：0922-222-222\n\n為請求返還借款事件，依法起訴事：\n\n　　訴之聲明\n一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。\n\n　　事實及理由\n一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。（原告可提出113年2月提款紀錄佐證資金流動，詳參原證2）\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條、第229條第1項、第233條第1項等相關規定提起本訴，狀請 鈞院鑒核，賜判如訴之聲明，以維權益。\n\n　　證據\n原證1：LINE對話紀錄截圖乙份。\n原證2：原告113年2月提款紀錄影本乙份。\n\n謹　狀\n臺灣臺北地方法院民事庭　公鑒\n\n中華民國 ${new Date().getFullYear() - 1911} 年 ${new Date().getMonth() + 1} 月 ${new Date().getDate()} 日\n\n具狀人　林大明 （簽名或蓋章）\n` }; const finalOutput = processLegalDocumentText(testResponse); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput; modal.style.display = 'block'; log('本機測試訴狀已生成並顯示', 'test'); showNotification('本機測試訴狀已生成！', 'success'); setupButtons(); }, 1500); }
             function resetForm() { if (confirm('您確定要清除所有已填寫的欄位嗎？')) { log('執行表單重置', 'ui'); form.reset(); clearErrors(); updateAiButtonState(); showNotification('表單欄位已清除', 'info'); } }
 
-            // --- AI Summarize Button Logic (MODIFIED to include Case Title) ---
-            function updateAiButtonState() {
-                if (!caseProcessTextarea || !aiSummarizeButtonContainer) return;
-                const processValue = caseProcessTextarea.value.trim();
-                aiSummarizeButtonContainer.innerHTML = '';
-                if (processValue) {
-                    const aiButton = createButton(
-                        'aiSummarizeBtn', 'AI 統整', 'wand-magic-sparkles', 'btn-accent', triggerAiSummarize, false, false
-                    );
-                    aiSummarizeButtonContainer.appendChild(aiButton);
+            // --- AI Summarize Button Logic ---
+            function updateAiButtonState() { if (!caseProcessTextarea || !aiSummarizeButtonContainer) return; const processValue = caseProcessTextarea.value.trim(); aiSummarizeButtonContainer.innerHTML = ''; if (processValue) { const aiButton = createButton( 'aiSummarizeBtn', 'AI 統整', 'wand-magic-sparkles', 'btn-accent', triggerAiSummarize, false, false ); aiSummarizeButtonContainer.appendChild(aiButton); } }
+
+            // --- *** NEW Helper Function to Populate Fields from AI JSON *** ---
+            function populateFieldsFromAI(aiData) {
+                log("正在使用 AI 數據填充表單欄位", "ui");
+
+                const requestsTextarea = document.getElementById('requests');
+                const factsTextarea = document.getElementById('facts');
+                const lawsTextarea = document.getElementById('laws');
+
+                // Function to format array into numbered/bulleted list string
+                const formatList = (items, prefixType = 'number') => {
+                     if (!Array.isArray(items) || items.length === 0) return '';
+                     // Try to detect if items already have a common prefix (like "a.", "1.", "一、")
+                     let hasPrefix = false;
+                     if (items.length > 1) {
+                        const prefixRegex = /^[a-z\d一二三四五六七八九十]+[、\.\)]\s*/i;
+                        const firstPrefix = items[0].match(prefixRegex);
+                        if (firstPrefix) {
+                            hasPrefix = items.every(item => String(item).startsWith(firstPrefix[0].substring(0,1))); // Check if all start similarly
+                        }
+                     }
+
+                     return items.map((item, index) => {
+                         let currentItem = String(item).trim(); // Ensure it's a string and trim
+                         // Remove existing prefix ONLY if we didn't detect a consistent one above
+                         // Or always remove if you prefer full control. Let's try always removing for consistency.
+                         currentItem = currentItem.replace(/^[\d一二三四五六七八九十]+[、\.\)]\s*/, "") // Matches "1.", "一、", "1)" etc.
+                                            .replace(/^[a-z][\.\)]\s*/i, "") // Matches "a.", "b)" etc.
+                                            .replace(/^[-•*]\s*/, "") // Matches "-", "•", "*" bullets
+                                            .trim();
+
+                         let prefix = '';
+                         if (prefixType === 'number') {
+                             const chineseNumerals = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+                             prefix = (index < chineseNumerals.length ? chineseNumerals[index] : (index + 1)) + '、';
+                         } else if (prefixType === 'bullet') {
+                             prefix = '● '; // Use a more distinct bullet
+                         } else { // Default to simple index
+                             prefix = `${index + 1}. `;
+                         }
+                         return prefix + currentItem;
+                     }).join('\n');
+                 };
+
+                // Populate fields, using the formatList function
+                if (requestsTextarea && aiData.claims) {
+                    requestsTextarea.value = formatList(aiData.claims, 'number');
+                    log(`填充 '請求事項' ${aiData.claims.length} 項`, "ui");
                 }
+                if (factsTextarea && aiData.facts) {
+                     factsTextarea.value = formatList(aiData.facts, 'number');
+                     log(`填充 '事實及理由' ${aiData.facts.length} 項`, "ui");
+                }
+                if (lawsTextarea && aiData.laws) {
+                     lawsTextarea.value = formatList(aiData.laws, 'bullet');
+                     log(`填充 '適用法條' ${aiData.laws.length} 項`, "ui");
+                }
+
+                // Optional: Clear the '案件詳細經過' field after successful processing
+                // if (caseProcessTextarea) {
+                //     caseProcessTextarea.value = '';
+                //     updateAiButtonState(); // Hide the AI button again
+                // }
             }
 
-            // --- *** MODIFIED triggerAiSummarize Function *** ---
+
+            // --- *** triggerAiSummarize Function (Handles sending Title+Process & receiving JSON) *** ---
             async function triggerAiSummarize() {
                 // 1. Get Case Process text
                 const processText = caseProcessTextarea.value.trim();
@@ -1054,35 +954,28 @@
                     return;
                 }
 
-                // 2. Get Case Title text (** NEW **)
-                // const caseTitleInput = document.getElementById('caseTitle'); // Already defined globally
+                // 2. Get Case Title text
                 const caseTitleText = caseTitleInput ? caseTitleInput.value.trim() : '';
                 if (!caseTitleText) {
                     showNotification('請先填寫「案件案由」欄位', 'warning');
-                    showError('caseTitle', 'AI 統整需要案件案由'); // Show error near the field
+                    showError('caseTitle', 'AI 統整需要案件案由');
                     caseTitleInput?.focus();
-                    return; // Stop if title is missing
+                    return;
                 }
-                // Clear potential previous error on caseTitle if it's now filled
-                 clearErrors(); // Clear all errors for simplicity, or target specific one:
-                // const caseTitleErrorElement = document.getElementById('caseTitle-error');
-                // if (caseTitleErrorElement && caseTitleErrorElement.style.display !== 'none') {
-                //     caseTitleErrorElement.style.display = 'none';
-                //     caseTitleInput?.classList.remove('error');
-                // }
+                clearErrors(); // Clear errors if both fields are filled
 
 
                 // 3. Check Webhook URL validity
-                if (!aiWebhookUrl || aiWebhookUrl === 'YOUR_N8N_AI_WEBHOOK_URL_HERE') { // Also check placeholder
+                if (!aiWebhookUrl || aiWebhookUrl === 'YOUR_N8N_AI_WEBHOOK_URL_HERE') {
                     showNotification('AI 統整功能未設定或設定錯誤', 'error');
                     log('AI 統整失敗：Webhook URL 未設定或無效', 'error');
-                    showError('caseProcess', 'AI 功能設定錯誤'); // Show error on related field
+                    showError('caseProcess', 'AI 功能設定錯誤');
                     return;
                 }
 
                 // 4. Handle Button State
                 const aiButton = document.getElementById('aiSummarizeBtn');
-                let originalButtonHTML = ''; // Store full HTML to restore icon+text
+                let originalButtonHTML = '';
                  if (aiButton) {
                      originalButtonHTML = aiButton.innerHTML;
                      aiButton.disabled = true;
@@ -1093,23 +986,23 @@
                 showNotification('正在請求 AI 統整，請稍候...', 'info');
 
                 try {
-                    // 5. Create Payload with both fields (** MODIFIED **)
+                    // 5. Create Payload with both fields
                     const payload = {
-                        caseTitle: caseTitleText,   // Include Case Title
-                        caseProcess: processText    // Include Case Process
+                        caseTitle: caseTitleText,
+                        caseProcess: processText
                     };
                     log('發送到 AI Webhook 的 Payload:', 'debug');
                     if(DEBUG_MODE) console.log("AI Payload:", JSON.stringify(payload, null, 2));
 
-                    // 6. Make Fetch Request (** MODIFIED body **)
+                    // 6. Make Fetch Request
                     const response = await fetch(aiWebhookUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-User-Id': window.debugInfo.user || 'unknown',
-                            'X-Action': 'summarize-case-process-with-title' // Action name updated slightly
+                            'X-Action': 'summarize-case-process-with-title'
                         },
-                        body: JSON.stringify(payload) // Send the combined payload
+                        body: JSON.stringify(payload)
                     });
 
                     log(`AI 統整回應狀態: ${response.status}`, 'response');
@@ -1124,40 +1017,48 @@
                         throw new Error(errorMessage);
                     }
 
-                    const result = await response.json(); // Expect JSON response on success
-                    log('收到 AI 統整結果', 'response');
-                    if (DEBUG_MODE) console.log('AI Result:', result);
+                    // --- MODIFIED: Expect and handle structured JSON ---
+                    const result = await response.json(); // Expecting the structured JSON
+                    log('收到 AI 統整結果 (結構化 JSON)', 'response');
+                    if (DEBUG_MODE) console.log('AI Result:', JSON.stringify(result, null, 2));
 
-                    // 8. Process Successful Result (Example: Fill 'facts')
-                    // IMPORTANT: Adjust based on the actual structure n8n returns
-                    const summary = result?.summary || result?.output || result?.text; // Try common keys
-                    if (summary && typeof summary === 'string') {
-                         const factsTextarea = document.getElementById('facts');
-                         factsTextarea.value = `【AI 摘要】:\n${summary.trim()}\n\n----------\n【原填寫之事實及理由】:\n` + factsTextarea.value;
-                         showNotification('AI 已將統整摘要附加到「事實及理由」欄位前方', 'success', 7000);
-                         factsTextarea.focus();
-                     } else {
-                         showNotification('AI 統整請求成功，但未收到預期格式的回應摘要', 'warning');
-                         log('AI 回應格式不符預期或無 summary/output/text 欄位', 'warning');
-                     }
+                    // Check for parsing errors reported by the n8n validation node (if implemented)
+                    if (result && result.parseError) {
+                         showNotification(`AI 回應解析錯誤: ${result.parseError}`, 'error', 8000);
+                         log(`n8n 報告解析錯誤: ${result.parseError}`, 'error');
+                         if(result.rawOutput) { console.error("LLM Raw Output (解析失敗):", result.rawOutput); }
+                    } else if (result && result.warning) { // Check for validation warnings
+                         showNotification(`AI 回應結構可能不完整: ${result.warning}`, 'warning', 7000);
+                         log(`n8n 報告結構警告: ${result.warning}`, 'warning');
+                         populateFieldsFromAI(result); // Attempt to populate anyway
+                    } else if (result && result.claims && result.facts && result.laws) {
+                        // Populate fields if we received the expected structure
+                        populateFieldsFromAI(result); // Call the new helper function
+                        showNotification('AI 分析完成，已填入相關欄位！', 'success');
+                    } else {
+                         // Handle cases where the response is valid JSON but lacks expected keys
+                         showNotification('AI 回應成功，但缺少預期的 claims/facts/laws 數據', 'warning');
+                         log('AI 成功回應，但缺少預期鍵值', 'warning');
+                    }
+                    // --- END MODIFIED RESPONSE HANDLING ---
 
                 } catch (error) {
                     // 9. Handle Errors
                     console.error('AI Summarize Fetch Error:', error);
                     log(`AI 統整請求失敗: ${error.message}`, 'error');
                     showNotification(`AI 統整失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
-                    showError('caseProcess', `AI 統整失敗`); // Show generic error on field
+                    showError('caseProcess', `AI 統整失敗`);
                 } finally {
                     // 10. Restore Button State
                      if (aiButton) {
                          aiButton.disabled = false;
-                         aiButton.innerHTML = originalButtonHTML; // Restore original button content
+                         aiButton.innerHTML = originalButtonHTML;
                      }
                 }
-            } // --- END of MODIFIED triggerAiSummarize Function ---
+            } // --- END of triggerAiSummarize Function ---
 
 
-            // --- Main Form Submission Handler ---
+            // --- Main Form Submission Handler (Unchanged in logic, just ensure it exists) ---
             function handleFormSubmit(e) {
                 e.preventDefault(); log('接收到表單提交請求', 'ui');
                 if (!validateForm()) { showNotification('提交失敗，請檢查表單紅色標示的欄位', 'error'); return; }
@@ -1171,18 +1072,17 @@
                 .catch(error => { clearInterval(timerInterval); hideLoading(); console.error('Form Submission/Generation Error:', error); log(`生成請求失敗: ${error.message}`, 'error'); showNotification(`生成訴狀時發生錯誤：${error.message || '未知錯誤'}`, 'error', 8000); });
             }
 
-            // --- Modal and Document Actions (Simplified for brevity, retain full logic) ---
+            // --- Modal and Document Actions ---
             if (closeModalBtn) { closeModalBtn.addEventListener('click', () => modal.style.display = 'none'); }
             window.addEventListener('click', (event) => { if (event.target === modal) { modal.style.display = 'none'; } });
             window.addEventListener('keydown', (event) => { if (event.key === 'Escape' && modal.style.display === 'block') { modal.style.display = 'none'; } });
-            // Add back the full logic for copyBtn, printBtn, downloadBtn, emailBtn here...
-             // Copy Logic Example:
+             // Copy Logic
              if (copyBtn) { copyBtn.addEventListener('click', () => { const textToCopy = documentContent.textContent; if (!textToCopy) { showNotification('沒有內容可複製', 'warning'); return; } navigator.clipboard.writeText(textToCopy).then(() => { showNotification('訴狀內容已複製到剪貼簿', 'success'); log('內容已複製', 'action'); }).catch(err => { showNotification('複製失敗，瀏覽器可能不支援或未授權', 'error'); log(`複製失敗: ${err.message}`, 'error'); }); }); }
-             // Print Logic Example:
+             // Print Logic
              if (printBtn) { printBtn.addEventListener('click', () => { log('觸發列印', 'action'); modal.classList.add('printing'); window.print(); setTimeout(() => modal.classList.remove('printing'), 500); }); }
-             // Download Logic Example:
+             // Download Logic
              if (downloadBtn) { downloadBtn.addEventListener('click', () => { try { const text = documentContent.textContent; if (!text) { showNotification('沒有內容可下載', 'warning'); return; } const caseType = document.getElementById('caseType').value || '訴狀'; const today = new Date().toISOString().slice(0, 10); const filename = `${caseType}_${today}.txt`; const blob = new Blob([text], {type: 'text/plain;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); showNotification(`已下載文件：${filename}`, 'success'); log(`訴狀已下載為 ${filename}`, 'action'); } catch (e) { log(`下載失敗: ${e.message}`, 'error'); showNotification('下載文件時發生錯誤', 'error'); } }); }
-             // Email Logic Example:
+             // Email Logic (Simulation)
              if (emailBtn) { emailBtn.addEventListener('click', () => { const userEmail = document.getElementById('email').value; const docText = documentContent.textContent; if (!userEmail || !validateEmail(userEmail)) { showNotification('請先在主表單填寫有效的電子郵件地址', 'warning'); showError('email', '請填寫有效的電子郵件以寄送'); return; } if (!docText) { showNotification('沒有訴狀內容可寄送', 'warning'); return; } log(`準備模擬發送郵件至 ${userEmail}`, 'action'); showNotification(`即將模擬發送訴狀至：${userEmail}`, 'info'); emailBtn.disabled = true; emailBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 寄送中...'; setTimeout(() => { emailBtn.disabled = false; emailBtn.innerHTML = '<i class="fas fa-envelope"></i> 寄送Email'; showNotification(`訴狀已「模擬」發送至您的信箱：${userEmail}`, 'success'); log(`模擬郵件已發送至 ${userEmail}`, 'action'); }, 2500); }); }
 
 
