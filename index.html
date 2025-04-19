@@ -263,11 +263,19 @@
             font-size: 0.9rem;
         }
 
-        #aiSummarizeButtonContainer,
-        #aiSearchButtonContainer {
+        #aiSummarizeButtonContainer {
             margin-top: 10px;
             text-align: right;
         }
+
+        /* Style for the AI Search button container */
+        #aiSearchButtonContainer {
+            margin-top: 15px;
+            /* Add space above the search button */
+            text-align: right;
+            /* Align the button to the right */
+        }
+
 
         /* --- Styles for AI Keywords --- */
         #aiKeywordsContainer {
@@ -1168,10 +1176,6 @@
                         </div>
                         <!-- === END Search Results Container === -->
 
-                        <!-- === Container for AI Search Button === -->
-                        <div id="aiSearchButtonContainer"></div>
-                        <!-- === END Container === -->
-
                         <!-- === Container for Keywords === -->
                         <div id="aiKeywordsContainer">
                             <p>AI 搜尋關鍵字 (可增刪):</p>
@@ -1185,6 +1189,11 @@
                             </div>
                         </div>
                         <!-- === END Keyword Container === -->
+
+                        <!-- === Container for AI Search Button (Moved Here) === -->
+                        <div id="aiSearchButtonContainer"></div>
+                        <!-- === END Container === -->
+
                     </div>
                 </div>
 
@@ -1274,7 +1283,7 @@
             const caseTitleInput = document.getElementById('caseTitle');
             const caseTypeSelect = document.getElementById('caseType');
             const caseTypeCustomInput = document.getElementById('caseTypeCustom');
-            const aiSearchButtonContainer = document.getElementById('aiSearchButtonContainer');
+            const aiSearchButtonContainer = document.getElementById('aiSearchButtonContainer'); // <-- Container is referenced here
             const lawsTextarea = document.getElementById('laws');
             const factsTextarea = document.getElementById('facts');
             const precedentsTextarea = document.getElementById('precedents');
@@ -1282,7 +1291,7 @@
             const keywordListDiv = document.getElementById('keywordList');
             const addKeywordInput = document.getElementById('addKeywordInput');
             const addKeywordBtn = document.getElementById('addKeywordBtn');
-            const searchResultsListContainer = document.getElementById('searchResultsListContainer'); // <-- New Reference
+            const searchResultsListContainer = document.getElementById('searchResultsListContainer');
 
             // --- Configuration ---
             // IMPORTANT: Replace with your actual webhook URLs
@@ -1643,7 +1652,15 @@
             // --- Initialization ---
             log(`系統初始化 - v${window.debugInfo.version}`, 'init');
             setupButtons();
-            if (aiSearchButtonContainer) { const aiSearchButton = createButton('aiSearchBtn', 'AI 搜尋', 'search', 'btn-accent', triggerAiSearch, false, false); aiSearchButtonContainer.appendChild(aiSearchButton); log('AI 搜尋按鈕已添加', 'init'); } else { log('未找到 AI 搜尋按鈕容器 (aiSearchButtonContainer)', 'warning'); }
+            // The JavaScript doesn't need to change where it puts the button,
+            // only the HTML needs to have the container (#aiSearchButtonContainer) in the right place.
+            if (aiSearchButtonContainer) {
+                const aiSearchButton = createButton('aiSearchBtn', 'AI 搜尋', 'search', 'btn-accent', triggerAiSearch, false, false);
+                aiSearchButtonContainer.appendChild(aiSearchButton); // This line appends the button to the container wherever it is in the HTML
+                log('AI 搜尋按鈕已添加到其容器中', 'init');
+            } else {
+                log('未找到 AI 搜尋按鈕容器 (aiSearchButtonContainer)', 'warning');
+            }
             if (addKeywordBtn) { addKeywordBtn.addEventListener('click', addKeywordHandler); }
             if (addKeywordInput) { addKeywordInput.addEventListener('keypress', function (e) { if (e.key === 'Enter') { e.preventDefault(); addKeywordHandler(); } }); }
             if (caseTypeSelect) { caseTypeSelect.addEventListener('change', handleCaseTypeChange); handleCaseTypeChange(); }
