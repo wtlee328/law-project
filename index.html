@@ -1058,6 +1058,36 @@
                         <label for="precedents">相關判決 (選填)</label>
                         <textarea id="precedents" name="precedents" rows="2" placeholder="例：
 最高法院○○年度台上字第○○號判決意旨參照"></textarea>
+                        <div class="form-group">
+                            <label for="precedents">相關判決 (選填)</label>
+                            <textarea id="precedents" name="precedents" rows="2" placeholder="例：
+                        最高法院○○年度台上字第○○號判決意旨參照"></textarea>
+                            <span class="helper-text">若有引用特定判決可填寫，AI 搜尋結果將會填入此處 (僅ID)。實際連結請查看下方顯示區域。</span>
+                            <!-- === Container for AI Search Button === -->
+                            <div id="aiSearchButtonContainer"></div>
+                            <!-- === END Container === -->
+
+                            <!-- === NEW Display Area for Precedents with Links === -->
+                            <div id="precedentsDisplay" class="precedents-display-area">
+                                <!-- AI Search results with links will be displayed here -->
+                            </div>
+                            <!-- === END Display Area === -->
+
+
+                            <!-- === Container for Keywords === -->
+                            <div id="aiKeywordsContainer">
+                                <p>AI 搜尋關鍵字 (可增刪):</p>
+                                <div class="keyword-list" id="keywordList">
+                                    <!-- Keyword tags will be inserted here -->
+                                </div>
+                                <div class="add-keyword-section">
+                                    <input type="text" id="addKeywordInput" placeholder="新增關鍵字...">
+                                    <button type="button" id="addKeywordBtn" class="btn btn-secondary"><i
+                                            class="fas fa-plus"></i> 新增</button>
+                                </div>
+                            </div>
+                            <!-- === END Keyword Container === -->
+                        </div>
                         <span class="helper-text">若有引用特定判決可填寫，AI 搜尋結果將會填入此處</span>
                         <!-- === Container for AI Search Button === -->
                         <div id="aiSearchButtonContainer"></div>
@@ -1311,29 +1341,56 @@
             function addKeywordHandler() { if (!addKeywordInput || !keywordListDiv) return; const newKeyword = addKeywordInput.value.trim(); if (newKeyword) { const existingKeywords = getCurrentKeywords(); if (!existingKeywords.includes(newKeyword)) { const tag = document.createElement('span'); tag.className = 'keyword-tag'; tag.textContent = newKeyword; tag.dataset.keyword = newKeyword; const deleteBtn = document.createElement('button'); deleteBtn.className = 'keyword-delete'; deleteBtn.innerHTML = '×'; deleteBtn.title = '移除此關鍵字'; deleteBtn.addEventListener('click', deleteKeywordHandler); tag.appendChild(deleteBtn); keywordListDiv.appendChild(tag); addKeywordInput.value = ''; log(`新增關鍵字: ${newKeyword}`, 'ui'); } else { showNotification(`關鍵字 "${newKeyword}" 已存在`, 'warning'); } } addKeywordInput.focus(); }
             function deleteKeywordHandler(event) { const tag = event.target.closest('.keyword-tag'); if (tag) { const keyword = tag.dataset.keyword; tag.remove(); log(`移除關鍵字: ${keyword}`, 'ui'); } }
             function getCurrentKeywords() { if (!keywordListDiv) return []; const tags = keywordListDiv.querySelectorAll('.keyword-tag'); return Array.from(tags).map(tag => tag.dataset.keyword); }
-            function resetAiSearchUI() { const aiButton = document.getElementById('aiSearchBtn'); if (aiButton) { aiButton.innerHTML = '<i class="fas fa-search"></i> AI 搜尋'; aiButton.disabled = false; } if (aiKeywordsContainer) { aiKeywordsContainer.style.display = 'none'; } if (keywordListDiv) keywordListDiv.innerHTML = ''; if (addKeywordInput) addKeywordInput.value = ''; aiSearchState = 'initial'; log('AI 搜尋 UI 已重設', 'ui'); }
+            function resetAiSearchUI() {
+                const aiButton = document.getElementById('aiSearchBtn');
+                const precedentsDisplayDiv = document.getElementById('precedentsDisplay'); // Get reference
+
+                if (aiButton) {
+                    aiButton.innerHTML = '<i class="fas fa-search"></i> AI 搜尋';
+                    aiButton.disabled = false;
+                }
+                if (aiKeywordsContainer) {
+                    aiKeywordsContainer.style.display = 'none';
+                }
+                if (keywordListDiv) keywordListDiv.innerHTML = '';
+                if (addKeywordInput) addKeywordInput.value = '';
+
+                // Clear and hide the precedents display area
+                if (precedentsDisplayDiv) {
+                    precedentsDisplayDiv.innerHTML = '';
+                    precedentsDisplayDiv.style.display = 'none';
+                }
+                // Optionally clear the precedents textarea as well, or leave it
+                // if (precedentsTextarea) precedentsTextarea.value = '';
+
+                aiSearchState = 'initial';
+                log('AI 搜尋 UI 已重設 (包括判決顯示區)', 'ui');
+            }
 
             // --- AI Search Function (Modified to populate 'precedents') ---
             async function triggerAiSearch() {
                 clearErrors();
                 const aiButton = document.getElementById('aiSearchBtn');
-                if (!aiButton) return;
+                const precedentsDisplayDiv = document.getElementById('precedentsDisplay'); // Get reference to display area
+                if (!aiButton || !precedentsDisplayDiv) return;
 
                 // --- Step 1: Generate Keywords ---
                 if (aiSearchState === 'initial') {
                     log('AI 搜尋 - 步驟 1: 生成關鍵字', 'ui');
                     const caseTitleText = caseTitleInput?.value.trim();
-                    const lawsValue = lawsTextarea?.value.trim(); // Use laws to generate keywords too
+                    const lawsValue = lawsTextarea?.value.trim();
                     if (!caseTitleText) { showNotification('請先填寫「案件案由」以產生搜尋關鍵字', 'warning'); showError('caseTitle', '請填寫案件案由'); caseTitleInput?.focus(); return; }
                     let keywords = [];
                     if (caseTitleText) { keywords = keywords.concat(caseTitleText.split(/[\s,、，；;]+/).map(kw => kw.trim()).filter(kw => kw.length > 0)); }
                     if (lawsValue) { const lawPattern = /^[\s•●-]*([\u4e00-\u9fa5]+法\s?第\s?\d+\s?條)/; lawsValue.split('\n').forEach(line => { const match = line.trim().match(lawPattern); if (match && match[1]) { keywords.push(match[1].replace(/\s/g, '')); } }); log(`從適用法條提取到符合格式的關鍵字 ${keywords.length - (caseTitleText ? caseTitleText.split(/[\s,、，；;]+/).map(kw => kw.trim()).filter(kw => kw.length > 0).length : 0)} 個`, 'debug'); }
-                    keywords = [...new Set(keywords)]; // Ensure unique keywords
+                    keywords = [...new Set(keywords)];
                     if (keywords.length === 0) { showNotification('未能從「案件案由」或「適用法條」提取有效關鍵字', 'warning'); return; }
                     displayKeywords(keywords);
                     aiButton.innerHTML = '<i class="fas fa-paper-plane"></i> 送出搜尋';
                     aiSearchState = 'keywords_ready';
                     log('AI 搜尋進入 "keywords_ready" 狀態', 'ui');
+                    precedentsDisplayDiv.innerHTML = ''; // Clear previous results if generating new keywords
+                    precedentsDisplayDiv.style.display = 'none';
                 }
                 // --- Step 2: Send Keywords to Webhook ---
                 else if (aiSearchState === 'keywords_ready') {
@@ -1345,92 +1402,122 @@
                     let originalButtonHTML = aiButton.innerHTML;
                     aiButton.disabled = true;
                     aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜尋中...';
-                    showNotification('正在請求 AI 搜尋相關判決...', 'info'); // Modified notification
+                    showNotification('正在請求 AI 搜尋相關判決...', 'info');
+                    precedentsDisplayDiv.innerHTML = ''; // Clear previous results
+                    precedentsDisplayDiv.style.display = 'none'; // Hide while loading
 
                     try {
                         const payload = { action: 'search_precedents_keywords', keywords: keywordsString, factsSummary: factsText ? factsText.substring(0, 800) : null };
                         log('發送到 AI Search Webhook 的 Payload (Keywords String):', 'debug'); if (DEBUG_MODE) console.log("AI Search Payload:", JSON.stringify(payload, null, 2));
                         const response = await fetch(aiSearchWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': window.debugInfo.user || 'unknown', 'X-Action': 'search-precedents-keywords' }, body: JSON.stringify(payload) });
                         log(`AI 搜尋回應狀態: ${response.status}`, 'response');
-                        const contentType = response.headers.get("content-type");
-                        log(`收到的 Content-Type: ${contentType}`, 'debug');
-                        if (!contentType || !contentType.includes("application/json")) {
-                            log("警告：回應的 Content-Type 可能不是 application/json，response.json() 可能會失敗。", 'warning');
-                            // 嘗試讀取文本以查看原始內容
-                            const rawText = await response.text();
-                            log(`原始回應文本: ${rawText}`, 'debug');
-                            // 這裡可以選擇拋出錯誤或嘗試手動解析 rawText
-                            throw new Error("收到的不是 JSON 回應");
-                        }
-                        // ***** DEBUGGING END *****
-
 
                         if (!response.ok) {
-                            let errorBody = await response.text(); // 讀取錯誤文本
-                            log(`AI 搜尋伺服器錯誤回應內容: ${errorBody}`, 'error');
-                            let errorMessage = `AI 搜尋伺服器錯誤: ${response.status} ${response.statusText}.`;
-                            try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; } catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; }
-                            throw new Error(errorMessage);
+                           let errorBody = await response.text();
+                           log(`AI 搜尋伺服器錯誤回應內容: ${errorBody}`, 'error');
+                           let errorMessage = `AI 搜尋伺服器錯誤: ${response.status} ${response.statusText}.`;
+                           try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; } catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; }
+                           throw new Error(errorMessage);
                         }
 
-                        // ***** 核心檢查點：解析 JSON *****
-                        const result = await response.json(); // 嘗試解析
-
-                        // ***** DEBUGGING START *****
+                        const result = await response.json();
                         log('收到 AI 搜尋結果 (已解析)', 'response');
-                        log(`解析後 result 的類型: ${typeof result}`, 'debug');
-                        log(`result 是陣列嗎?: ${Array.isArray(result)}`, 'debug');
-                        if (DEBUG_MODE) {
-                            // 使用 JSON.stringify 仔細查看結構
-                            console.log('AI Search Result (Parsed):', JSON.stringify(result, null, 2));
-                        }
-                        // ***** DEBUGGING END *****
+                        if (DEBUG_MODE) console.log('AI Search Result (Parsed):', JSON.stringify(result, null, 2));
 
-
-                        // --- 處理結果並填入 'precedents' textarea ---
-                        let caseStrings = [];
-
-                        // ***** 再次檢查這個條件 *****
-                        // 條件：result 是一個陣列，長度大於0，第一個元素 result[0] 存在，
-                        //       且 result[0] 有一個名為 'data' 的屬性，
-                        //       且 result[0].data 的值是一個陣列。
-                        if (typeof result === 'object' && result !== null && result.data && Array.isArray(result.data)) {
-                            log(`條件判斷成功: 找到符合 {\"data\": [...]} 的結構`, 'process'); // 更新日誌訊息
-                            caseStrings = result.data.filter(item => typeof item === 'string'); // 直接從 result.data 提取
-                            log(`從 data 陣列提取到 ${caseStrings.length} 筆判決資料`, 'process');
-                        }
-                        // (保留 else 部分用於處理其他意外情況)
-                        else {
-                            log(`結構判斷失敗: 回應的結構不符合預期的 {\"data\": [...]}。實際收到的 result 見上方日誌。`, 'warning');
-                        }
-
-                        // Target the 'precedents' textarea
-                        if (precedentsTextarea) {
-                            log(`準備填入判決欄位，找到 ${caseStrings.length} 筆資料`, 'ui'); // <-- 檢查這裡的數量
-                            if (caseStrings.length > 0) {
-                                const formattedText = caseStrings.join('\n');
-                                precedentsTextarea.value = formattedText;
-                                showNotification(`相關判決結果已填入「相關判決」欄位 (${caseStrings.length} 項)`, 'success');
-                                log(`已將 ${caseStrings.length} 筆結果填入「相關判決」欄位`, 'ui');
-                                precedentsTextarea.focus();
-                                precedentsTextarea.scrollTop = precedentsTextarea.scrollHeight;
-                            } else {
-                                // ***** 如果 caseStrings 是空的，會執行這裡 *****
-                                showNotification('AI 未找到相關判決結果', 'info');
-                                log('caseStrings 陣列為空，顯示 "未找到" 訊息', 'ui');
-                            }
+                        // --- NEW: Process results for display with links ---
+                        let caseObjects = [];
+                         // Adjusting the check based on the provided input sample which is an array directly
+                        if (Array.isArray(result)) {
+                            log(`條件判斷成功: 找到符合 [...] 的結構 (陣列)`, 'process');
+                            // Filter for items that are objects and have both id and url
+                            caseObjects = result.filter(item =>
+                                typeof item === 'object' && item !== null && typeof item.id === 'string' && typeof item.url === 'string'
+                            );
+                            log(`從回應陣列提取到 ${caseObjects.length} 筆有效判決物件 (含 id 和 url)`, 'process');
                         } else {
-                            log('無法找到 "相關判決" (precedents) 的 textarea 元素', 'error');
-                            showNotification('無法將結果填入判決欄位 (內部錯誤)', 'error');
+                            // Keep the old check just in case the format reverts or varies
+                             if (typeof result === 'object' && result !== null && result.data && Array.isArray(result.data)) {
+                                log(`條件判斷成功: 找到符合 {\"data\": [...]} 的結構`, 'process');
+                                // Filter for items that are objects and have both id and url
+                                caseObjects = result.data.filter(item =>
+                                    typeof item === 'object' && item !== null && typeof item.id === 'string' && typeof item.url === 'string'
+                                );
+                                log(`從 data 陣列提取到 ${caseObjects.length} 筆有效判決物件 (含 id 和 url)`, 'process');
+                            } else {
+                                log(`結構判斷失敗: 回應的結構不符合預期的 [...] 或 {\"data\": [...] }。實際收到的 result 見上方日誌。`, 'warning');
+                            }
                         }
-                        // --- 處理結束 ---
+
+                        // Populate the display area
+                        if (caseObjects.length > 0) {
+                            caseObjects.forEach(item => {
+                                const entryDiv = document.createElement('div');
+                                entryDiv.className = 'precedent-entry';
+
+                                // Add the judgment ID text
+                                entryDiv.appendChild(document.createTextNode(item.id));
+
+                                // Add the link
+                                const link = document.createElement('a');
+                                link.href = item.url;
+                                link.target = '_blank'; // Open in new tab
+                                link.rel = 'noopener noreferrer'; // Security measure
+                                link.className = 'precedent-link';
+                                link.innerHTML = '<i class="fas fa-external-link-alt"></i> 連結'; // Icon + Text
+                                // link.textContent = '[開啟連結]'; // Alternative: Text only
+
+                                entryDiv.appendChild(link);
+                                precedentsDisplayDiv.appendChild(entryDiv);
+                            });
+                            precedentsDisplayDiv.style.display = 'block'; // Show the display area
+                            showNotification(`AI 搜尋完成，找到 ${caseObjects.length} 筆相關判決`, 'success');
+                            log(`已將 ${caseObjects.length} 筆結果顯示於判決區`, 'ui');
+
+                            // Also update the textarea with IDs only for form submission
+                            if (precedentsTextarea) {
+                                precedentsTextarea.value = caseObjects.map(item => item.id).join('\n');
+                                log(`已將 ${caseObjects.length} 筆判決 ID 填入「相關判決」文本框`, 'ui');
+                            }
+
+                        } else {
+                            // Display no results message
+                            const noResultsP = document.createElement('p');
+                            noResultsP.textContent = '未找到相關判決結果。';
+                            noResultsP.className = 'no-results';
+                            precedentsDisplayDiv.appendChild(noResultsP);
+                            precedentsDisplayDiv.style.display = 'block'; // Show the area even if no results
+                            showNotification('AI 未找到相關判決結果', 'info');
+                            log('AI 搜尋未返回有效判決物件，顯示 "未找到" 訊息', 'ui');
+                             // Clear the textarea if no results found
+                             if (precedentsTextarea) {
+                                precedentsTextarea.value = '';
+                            }
+                        }
+                        // --- End processing results ---
 
                     } catch (error) {
                         console.error('AI Search Fetch Error:', error);
                         log(`AI 搜尋請求或處理失敗: ${error.message}`, 'error');
                         showNotification(`AI 搜尋失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
+                        // Ensure display area is hidden on error
+                        precedentsDisplayDiv.innerHTML = '';
+                        precedentsDisplayDiv.style.display = 'none';
+                         // Clear the textarea on error
+                        if (precedentsTextarea) {
+                            precedentsTextarea.value = '';
+                        }
                     } finally {
-                        resetAiSearchUI();
+                        // Reset button state etc., but don't reset the entire UI here
+                        // let the results stay visible until next search or reset.
+                         if (aiButton) {
+                            aiButton.disabled = false;
+                            // Keep button text as '送出搜尋' until reset or new keyword generation
+                            // aiButton.innerHTML = originalButtonHTML;
+                            aiButton.innerHTML = '<i class="fas fa-paper-plane"></i> 送出搜尋'; // Keep this state
+                        }
+                        // Resetting the whole UI state might be too much here,
+                        // maybe just reset the button, not the keywords/display
+                        // resetAiSearchUI(); <-- Removed this automatic reset
                     }
                 }
             }
