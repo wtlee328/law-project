@@ -19,7 +19,7 @@
         window.debugInfo = {
             logRequests: true,
             logResponses: true,
-            version: "wtlee328-debug-2025-04-19-laws-output", // Updated version
+            version: "wtlee328-debug-2025-04-19-laws-output-v2", // Updated version for precedent handling
             user: "wtlee328",
             timestamp: new Date().toISOString() // Use current time
         };
@@ -1058,7 +1058,7 @@
                         <label for="precedents">相關判決 (選填)</label>
                         <textarea id="precedents" name="precedents" rows="2" placeholder="例：
 最高法院○○年度台上字第○○號判決意旨參照"></textarea>
-                        <span class="helper-text">若有引用特定判決可填寫</span>
+                        <span class="helper-text">若有引用特定判決可填寫，AI 搜尋結果將會填入此處</span>
                         <!-- === Container for AI Search Button === -->
                         <div id="aiSearchButtonContainer"></div>
                         <!-- === END Container === -->
@@ -1141,7 +1141,7 @@
     <footer>
         <p>© 2025 民事訴訟書狀生成系統 | 本系統及生成內容僅供學術研究與模擬參考</p>
         <p><small><strong>重要提醒：</strong>使用本系統生成的任何文件均不構成法律意見，請務必諮詢專業律師並由其審閱修改後再行使用。</small></p>
-        <p><small>Debug Version: wtlee328 (Press Alt+D for debug panel)</small></p>
+        <p><small>Debug Version: wtlee328-laws-output-v2 (Press Alt+D for debug panel)</small></p>
     </footer>
 
     <script>
@@ -1166,9 +1166,9 @@
             const caseTypeSelect = document.getElementById('caseType');
             const caseTypeCustomInput = document.getElementById('caseTypeCustom');
             const aiSearchButtonContainer = document.getElementById('aiSearchButtonContainer');
-            const lawsTextarea = document.getElementById('laws'); // Ensured reference exists
+            const lawsTextarea = document.getElementById('laws'); // Reference to laws textarea
             const factsTextarea = document.getElementById('facts'); // Added reference
-            const precedentsTextarea = document.getElementById('precedents'); // Ensured reference exists
+            const precedentsTextarea = document.getElementById('precedents'); // Reference to precedents textarea
             const aiKeywordsContainer = document.getElementById('aiKeywordsContainer'); // Added reference
             const keywordListDiv = document.getElementById('keywordList'); // Added reference
             const addKeywordInput = document.getElementById('addKeywordInput'); // Added reference
@@ -1275,12 +1275,12 @@
                 log("正在使用 AI 數據填充表單欄位", "ui");
                 const requestsTextarea = document.getElementById('requests');
                 const factsTextarea = document.getElementById('facts');
-                const lawsTextarea = document.getElementById('laws');
+                const lawsTextarea = document.getElementById('laws'); // Still need this reference
                 const formatList = (items, prefixType = 'number') => { if (!Array.isArray(items) || items.length === 0) return ''; let hasPrefix = false; if (items.length > 1) { const prefixRegex = /^[a-z\d一二三四五六七八九十]+[、\.\)]\s*/i; const firstPrefix = String(items[0]).match(prefixRegex); if (firstPrefix) { hasPrefix = items.every(item => String(item).startsWith(firstPrefix[0].substring(0, 1))); } } return items.map((item, index) => { let currentItem = String(item).trim(); currentItem = currentItem.replace(/^[\d一二三四五六七八九十]+[、\.\)]\s*/, "").replace(/^[a-z][\.\)]\s*/i, "").replace(/^[-•*]\s*/, "").trim(); let prefix = ''; if (prefixType === 'number') { const chineseNumerals = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']; prefix = (index < chineseNumerals.length ? chineseNumerals[index] : (index + 1)) + '、'; } else if (prefixType === 'bullet') { prefix = '● '; } else { prefix = `${index + 1}. `; } return currentItem ? prefix + currentItem : ''; }).filter(item => item !== '').join('\n'); };
                 if (requestsTextarea && aiData.claims) { requestsTextarea.value = formatList(aiData.claims, 'number'); log(`填充 '請求事項' ${aiData.claims.length} 項`, "ui"); } else if (requestsTextarea) { requestsTextarea.value = ''; log(`未收到 AI claims 數據，清空 '請求事項'`, "ui"); }
                 if (factsTextarea && aiData.facts) { factsTextarea.value = formatList(aiData.facts, 'number'); log(`填充 '事實及理由' ${aiData.facts.length} 項`, "ui"); } else if (factsTextarea) { factsTextarea.value = ''; log(`未收到 AI facts 數據，清空 '事實及理由'`, "ui"); }
                 if (lawsTextarea && aiData.laws) { lawsTextarea.value = formatList(aiData.laws, 'bullet'); log(`填充 '適用法條' ${aiData.laws.length} 項`, "ui"); } else if (lawsTextarea) { lawsTextarea.value = ''; log(`未收到 AI laws 數據，清空 '適用法條'`, "ui"); }
-                resetAiSearchUI();
+                resetAiSearchUI(); // Reset AI Search state after summarization potentially alters related fields
             }
 
             // --- AI Summarize Function ---
@@ -1313,7 +1313,7 @@
             function getCurrentKeywords() { if (!keywordListDiv) return []; const tags = keywordListDiv.querySelectorAll('.keyword-tag'); return Array.from(tags).map(tag => tag.dataset.keyword); }
             function resetAiSearchUI() { const aiButton = document.getElementById('aiSearchBtn'); if (aiButton) { aiButton.innerHTML = '<i class="fas fa-search"></i> AI 搜尋'; aiButton.disabled = false; } if (aiKeywordsContainer) { aiKeywordsContainer.style.display = 'none'; } if (keywordListDiv) keywordListDiv.innerHTML = ''; if (addKeywordInput) addKeywordInput.value = ''; aiSearchState = 'initial'; log('AI 搜尋 UI 已重設', 'ui'); }
 
-            // --- AI Search Function (Modified for two steps and laws output) ---
+            // --- AI Search Function (Modified to populate 'precedents') ---
             async function triggerAiSearch() {
                 clearErrors();
                 const aiButton = document.getElementById('aiSearchBtn');
@@ -1323,12 +1323,12 @@
                 if (aiSearchState === 'initial') {
                     log('AI 搜尋 - 步驟 1: 生成關鍵字', 'ui');
                     const caseTitleText = caseTitleInput?.value.trim();
-                    const lawsValue = lawsTextarea?.value.trim();
+                    const lawsValue = lawsTextarea?.value.trim(); // Use laws to generate keywords too
                     if (!caseTitleText) { showNotification('請先填寫「案件案由」以產生搜尋關鍵字', 'warning'); showError('caseTitle', '請填寫案件案由'); caseTitleInput?.focus(); return; }
                     let keywords = [];
                     if (caseTitleText) { keywords = keywords.concat(caseTitleText.split(/[\s,、，；;]+/).map(kw => kw.trim()).filter(kw => kw.length > 0)); }
                     if (lawsValue) { const lawPattern = /^[\s•●-]*([\u4e00-\u9fa5]+法\s?第\s?\d+\s?條)/; lawsValue.split('\n').forEach(line => { const match = line.trim().match(lawPattern); if (match && match[1]) { keywords.push(match[1].replace(/\s/g, '')); } }); log(`從適用法條提取到符合格式的關鍵字 ${keywords.length - (caseTitleText ? caseTitleText.split(/[\s,、，；;]+/).map(kw => kw.trim()).filter(kw => kw.length > 0).length : 0)} 個`, 'debug'); }
-                    keywords = [...new Set(keywords)];
+                    keywords = [...new Set(keywords)]; // Ensure unique keywords
                     if (keywords.length === 0) { showNotification('未能從「案件案由」或「適用法條」提取有效關鍵字', 'warning'); return; }
                     displayKeywords(keywords);
                     aiButton.innerHTML = '<i class="fas fa-paper-plane"></i> 送出搜尋';
@@ -1345,7 +1345,7 @@
                     let originalButtonHTML = aiButton.innerHTML;
                     aiButton.disabled = true;
                     aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜尋中...';
-                    showNotification('正在請求 AI 搜尋相關法條/判決...', 'info'); // Modified notification
+                    showNotification('正在請求 AI 搜尋相關判決...', 'info'); // Modified notification
 
                     try {
                         const payload = { action: 'search_precedents_keywords', keywords: keywordsString, factsSummary: factsText ? factsText.substring(0, 800) : null };
@@ -1356,57 +1356,55 @@
                         const result = await response.json();
                         log('收到 AI 搜尋結果', 'response'); if (DEBUG_MODE) console.log('AI Search Result (Raw):', JSON.stringify(result, null, 2));
 
-                        // --- MODIFICATION: Process result and put into 'laws' textarea ---
-                        let responseContentForLaws = [];
-                        const lawsFieldKey = 'applicableLaws'; // Ideal key name in response
-                        const precedentFieldKey = 'precedents'; // Current key name in response (fallback)
-
-                        // Try to find a specific key for laws first
-                        if (Array.isArray(result) && result.length > 0 && result[0][lawsFieldKey] && Array.isArray(result[0][lawsFieldKey])) {
-                            responseContentForLaws = result[0][lawsFieldKey];
-                            log(`從回應陣列提取 ${responseContentForLaws.length} 筆適用法條 (${lawsFieldKey})`, 'process');
-                        } else if (typeof result === 'object' && result !== null && result[lawsFieldKey] && Array.isArray(result[lawsFieldKey])) {
-                            responseContentForLaws = result[lawsFieldKey];
-                            log(`從回應物件提取 ${responseContentForLaws.length} 筆適用法條 (${lawsFieldKey})`, 'process');
+                        // --- MODIFICATION START: Process result and put into 'precedents' textarea ---
+                        let caseStrings = [];
+                        // Check for the specific structure: [{"data": [...]}]
+                        if (Array.isArray(result) && result.length > 0 && result[0].data && Array.isArray(result[0].data)) {
+                             caseStrings = result[0].data.filter(item => typeof item === 'string'); // Ensure items are strings
+                             log(`從 n8n 回應提取到 ${caseStrings.length} 筆判決資料 (來自 data 陣列)`, 'process');
                         }
-                        // Fallback: Use 'precedents' if 'applicableLaws' not found
-                        else if (Array.isArray(result) && result.length > 0 && result[0][precedentFieldKey] && Array.isArray(result[0][precedentFieldKey])) {
-                            responseContentForLaws = result[0][precedentFieldKey];
-                            log(`未找到 '${lawsFieldKey}'，從回應陣列提取 ${responseContentForLaws.length} 筆判決 (${precedentFieldKey}) 作為法條內容`, 'process');
-                        } else if (typeof result === 'object' && result !== null && result[precedentFieldKey] && Array.isArray(result[precedentFieldKey])) {
-                            responseContentForLaws = result[precedentFieldKey];
-                            log(`未找到 '${lawsFieldKey}'，從回應物件提取 ${responseContentForLaws.length} 筆判決 (${precedentFieldKey}) 作為法條內容`, 'process');
-                        } else {
-                            log(`AI 搜尋回應格式非預期或未找到判決/法條資料`, 'warning');
+                        // Add a fallback for other potential structures if needed, e.g., { "precedents": [...] }
+                        else if (typeof result === 'object' && result !== null && result.precedents && Array.isArray(result.precedents)) {
+                             caseStrings = result.precedents.filter(item => typeof item === 'string');
+                             log(`從 n8n 回應提取到 ${caseStrings.length} 筆判決資料 (來自 precedents 鍵)`, 'process');
+                        }
+                        else {
+                             log(`AI 搜尋回應格式非預期或未找到判決資料 (期望 [{"data": [...]}] 或 {"precedents": [...]})`, 'warning');
+                             // You could attempt to parse other common structures here if necessary
+                             if (Array.isArray(result) && result.every(item => typeof item === 'string')) {
+                                caseStrings = result;
+                                log(`嘗試將回應陣列直接作為判決列表 (共 ${caseStrings.length} 筆)`, 'process');
+                             }
                         }
 
-                        // Target the 'laws' textarea
-                        if (lawsTextarea) {
-                            if (responseContentForLaws.length > 0) {
-                                const newText = responseContentForLaws.join('\n');
-                                lawsTextarea.value = newText; // Replace content
-                                showNotification(`AI 搜尋結果已填入「適用法條」欄位 (${responseContentForLaws.length} 項)`, 'success');
-                                log(`已將 ${responseContentForLaws.length} 筆結果填入「適用法條」欄位`, 'ui');
-                                lawsTextarea.focus();
-                                lawsTextarea.scrollTop = lawsTextarea.scrollHeight;
-                            } else {
-                                showNotification('AI 未找到相關法條或判決結果', 'info');
-                                // Optionally clear the field:
-                                // lawsTextarea.value = '';
-                            }
-                        } else {
-                            log('無法找到 "適用法條" (laws) 的 textarea 元素', 'error');
-                            showNotification('無法將結果填入法條欄位 (內部錯誤)', 'error');
-                        }
-                        // --- END MODIFICATION ---
+                        // Target the 'precedents' textarea
+                        if (precedentsTextarea) {
+                             if (caseStrings.length > 0) {
+                                 const formattedText = caseStrings.join('\n');
+                                 precedentsTextarea.value = formattedText; // Replace content
+                                 showNotification(`相關判決結果已填入「相關判決」欄位 (${caseStrings.length} 項)`, 'success');
+                                 log(`已將 ${caseStrings.length} 筆結果填入「相關判決」欄位`, 'ui');
+                                 precedentsTextarea.focus();
+                                 precedentsTextarea.scrollTop = precedentsTextarea.scrollHeight; // Scroll to show content
+                             } else {
+                                 showNotification('AI 未找到相關判決結果', 'info');
+                                 // Optionally clear the field:
+                                 // precedentsTextarea.value = '';
+                             }
+                         } else {
+                             log('無法找到 "相關判決" (precedents) 的 textarea 元素', 'error');
+                             showNotification('無法將結果填入判決欄位 (內部錯誤)', 'error');
+                         }
+                        // --- MODIFICATION END ---
 
                     } catch (error) {
                         console.error('AI Search Fetch Error:', error); log(`AI 搜尋請求失敗: ${error.message}`, 'error'); showNotification(`AI 搜尋失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
                     } finally {
-                        resetAiSearchUI();
+                        resetAiSearchUI(); // Always reset the UI regardless of success or failure
                     }
                 }
             }
+
 
             // --- Main Form Submission Handler ---
             function handleFormSubmit(e) {
@@ -1440,7 +1438,7 @@
             if (caseTypeSelect) { caseTypeSelect.addEventListener('change', handleCaseTypeChange); handleCaseTypeChange(); }
             if (caseProcessTextarea) { caseProcessTextarea.addEventListener('input', updateAiButtonState); updateAiButtonState(); } else { log('未找到案件經過欄位 (caseProcess textarea)', 'warning'); }
             if (caseTitleInput) { caseTitleInput.addEventListener('input', resetAiSearchUI); }
-            if (lawsTextarea) { lawsTextarea.addEventListener('input', resetAiSearchUI); }
+            if (lawsTextarea) { lawsTextarea.addEventListener('input', resetAiSearchUI); } // Reset search if laws change manually
             document.addEventListener('keydown', (e) => { if (e.altKey && e.key === 'd') { debugPanel.classList.toggle('active'); log(`調試面板 ${debugPanel.classList.contains('active') ? '開啟' : '關閉'}`, 'ui'); e.preventDefault(); } });
             showNotification('按下 Alt+D 可顯示/隱藏調試面板', 'info', 7000);
             resetAiSearchUI();
