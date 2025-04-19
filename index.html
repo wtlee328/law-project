@@ -19,7 +19,7 @@
         window.debugInfo = {
             logRequests: true,
             logResponses: true,
-            version: "wtlee328-debug-2025-04-18-url-fix-keywords", // Updated version
+            version: "wtlee328-debug-2025-04-19-laws-output", // Updated version
             user: "wtlee328",
             timestamp: new Date().toISOString() // Use current time
         };
@@ -1045,14 +1045,14 @@
                     <div class="form-group">
                         <label for="laws">適用法條 (選填)
                             <span class="tooltip"><i class="fas fa-question-circle"></i><span
-                                    class="tooltip-text">請列出您認為適用的主要法條，每條一行。</span></span>
+                                    class="tooltip-text">請列出您認為適用的主要法條，每條一行。AI 搜尋結果將會填入此處。</span></span>
                         </label>
                         <textarea id="laws" name="laws" rows="3" placeholder="例：
 民法第474條
 民法第478條
 民法第229條第1項
 民事訴訟法第78條"></textarea>
-                        <span class="helper-text">可不填，由 AI 統整或生成書狀時判斷</span>
+                        <span class="helper-text">可不填，由 AI 統整或生成書狀時判斷，AI 搜尋結果亦會填入此處</span>
                     </div>
                     <div class="form-group">
                         <label for="precedents">相關判決 (選填)</label>
@@ -1166,9 +1166,9 @@
             const caseTypeSelect = document.getElementById('caseType');
             const caseTypeCustomInput = document.getElementById('caseTypeCustom');
             const aiSearchButtonContainer = document.getElementById('aiSearchButtonContainer');
-            const lawsTextarea = document.getElementById('laws'); // Added reference
+            const lawsTextarea = document.getElementById('laws'); // Ensured reference exists
             const factsTextarea = document.getElementById('facts'); // Added reference
-            const precedentsTextarea = document.getElementById('precedents'); // Added reference
+            const precedentsTextarea = document.getElementById('precedents'); // Ensured reference exists
             const aiKeywordsContainer = document.getElementById('aiKeywordsContainer'); // Added reference
             const keywordListDiv = document.getElementById('keywordList'); // Added reference
             const addKeywordInput = document.getElementById('addKeywordInput'); // Added reference
@@ -1230,40 +1230,32 @@
             function setupButtons() {
                 buttonsContainer.innerHTML = '';
                 const leftButtonGroup = document.createElement('div');
-
-                // MODIFIED HERE: Changed text and class for the four buttons
                 const demoButton = createButton('demoBtn', '示範', 'magic', 'secondary-btn', fillDemoData);
-                const testButton = createButton('testBtn', '測試', 'vial', 'secondary-btn', runTest); // Changed class
-                const resetButton = createButton('resetBtn', '清除', 'undo', 'secondary-btn', resetForm); // Changed class
-
+                const testButton = createButton('testBtn', '測試', 'vial', 'secondary-btn', runTest);
+                const resetButton = createButton('resetBtn', '清除', 'undo', 'secondary-btn', resetForm);
                 leftButtonGroup.appendChild(demoButton);
                 leftButtonGroup.appendChild(testButton);
                 leftButtonGroup.appendChild(resetButton);
-
                 const savedData = loadDocumentFromLocalStorage();
                 if (savedData && savedData.timestamp) {
                     const timestamp = new Date(savedData.timestamp);
                     const now = new Date();
                     const diffMinutes = Math.floor((now - timestamp) / (1000 * 60));
                     if (diffMinutes < 60) {
-                        const restoreButton = createButton('restoreBtn', '恢復', 'history', 'secondary-btn', () => { // Changed text and class
+                        const restoreButton = createButton('restoreBtn', '恢復', 'history', 'secondary-btn', () => {
                             if (savedData.content) {
                                 const processedText = processLegalDocumentText(savedData.content);
                                 documentContent.textContent = processedText;
                                 modal.style.display = 'block';
                                 log(`從本地存儲恢復書狀 (生成於 ${diffMinutes} 分鐘前)`, 'storage');
                                 showNotification('已恢復上次生成的書狀內容', 'success');
-                            } else {
-                                showNotification('找不到上次的內容', 'warning');
-                            }
+                            } else { showNotification('找不到上次的內容', 'warning'); }
                         });
                         leftButtonGroup.appendChild(restoreButton);
                         log(`發現 ${diffMinutes} 分鐘前生成的本地存儲數據`, 'info');
                     }
                 }
-                // END MODIFICATIONS
-
-                const submitButton = createButton('submitBtn', '生成書狀', 'file-alt', 'btn-primary', null, true); // Keep this as primary
+                const submitButton = createButton('submitBtn', '生成書狀', 'file-alt', 'btn-primary', null, true);
                 buttonsContainer.appendChild(leftButtonGroup);
                 buttonsContainer.appendChild(submitButton);
                 form.removeEventListener('submit', handleFormSubmit);
@@ -1271,9 +1263,9 @@
             }
 
             // --- Button Action Handlers ---
-            function fillDemoData() { log('正在填入示範數據...', 'ui'); clearErrors(); caseTypeSelect.value = '起訴狀'; handleCaseTypeChange(); document.getElementById('courtName').value = '臺灣臺北地方法院'; document.getElementById('plaintiff').value = '林大明\n身分證字號：A123456789\n住址：臺北市信義區市府路1號\n電話：0911-111-111'; document.getElementById('defendant').value = '王小華\n身分證字號：B987654321\n住址：新北市板橋區縣民大道二段7號\n電話：0922-222-222'; document.getElementById('caseTitle').value = '請求返還借款'; document.getElementById('caseProcess').value = '被告王小華於民國113年2月1日向原告林大明開口借款新台幣十萬元整，聲稱家中有急用，約定同年5月1日還款。原告基於多年情誼，於113年2月5日以現金交付予被告。然屆至清償期，被告並未還款。原告於6月1日以LINE訊息催討，被告已讀不回。後續多次以電話聯繫，被告均未接聽或掛斷。'; document.getElementById('requests').value = '一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。'; document.getElementById('facts').value = '一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條等相關規定提起本訴，請求判如訴之聲明。'; document.getElementById('evidence').value = '原證1：LINE對話紀錄截圖乙份\n原證2：原告113年2月提款紀錄（佐證資金來源）'; document.getElementById('laws').value = '民法第474條\n民法第478條\n民法第229條第1項\n民法第233條第1項'; document.getElementById('precedents').value = ''; document.getElementById('email').value = 'demo.user@example.com'; document.getElementById('phone').value = '0912-345678'; updateAiButtonState(); resetAiSearchUI(); /* Reset AI Search UI on demo fill */ showNotification('已填入示範數據', 'success'); }
+            function fillDemoData() { log('正在填入示範數據...', 'ui'); clearErrors(); caseTypeSelect.value = '起訴狀'; handleCaseTypeChange(); document.getElementById('courtName').value = '臺灣臺北地方法院'; document.getElementById('plaintiff').value = '林大明\n身分證字號：A123456789\n住址：臺北市信義區市府路1號\n電話：0911-111-111'; document.getElementById('defendant').value = '王小華\n身分證字號：B987654321\n住址：新北市板橋區縣民大道二段7號\n電話：0922-222-222'; document.getElementById('caseTitle').value = '請求返還借款'; document.getElementById('caseProcess').value = '被告王小華於民國113年2月1日向原告林大明開口借款新台幣十萬元整，聲稱家中有急用，約定同年5月1日還款。原告基於多年情誼，於113年2月5日以現金交付予被告。然屆至清償期，被告並未還款。原告於6月1日以LINE訊息催討，被告已讀不回。後續多次以電話聯繫，被告均未接聽或掛斷。'; document.getElementById('requests').value = '一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。'; document.getElementById('facts').value = '一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條等相關規定提起本訴，請求判如訴之聲明。'; document.getElementById('evidence').value = '原證1：LINE對話紀錄截圖乙份\n原證2：原告113年2月提款紀錄（佐證資金來源）'; document.getElementById('laws').value = '民法第474條\n民法第478條\n民法第229條第1項\n民法第233條第1項'; document.getElementById('precedents').value = ''; document.getElementById('email').value = 'demo.user@example.com'; document.getElementById('phone').value = '0912-345678'; updateAiButtonState(); resetAiSearchUI(); showNotification('已填入示範數據', 'success'); }
             function runTest() { fillDemoData(); log('開始本機測試流程...', 'test'); showNotification('使用示範數據進行本機測試...', 'info'); showLoading("模擬本機生成中...", 2); setTimeout(() => { hideLoading(); const testResponse = { output: `\n民事起訴狀（測試範本）\n案　　號： （法院自動編列）\n股　　別： （法院自動編列）\n\n原　　告　林大明\n　　　　　身分證字號：A123456789\n　　　　　住址：臺北市信義區市府路1號\n　　　　　電話：0911-111-111\n\n被　　告　王小華\n　　　　　身分證字號：B987654321\n　　　　　住址：新北市板橋區縣民大道二段7號\n　　　　　電話：0922-222-222\n\n為請求返還借款事件，依法起訴事：\n\n　　訴之聲明\n一、被告應給付原告新台幣拾萬元整。\n二、及自起訴狀繕本送達翌日起至清償日止，按週年利率百分之五計算之利息。\n三、訴訟費用由被告負擔。\n四、原告願供擔保，請准宣告假執行。\n\n　　事實及理由\n一、被告王小華於民國113年2月1日因故向原告林大明借款新台幣（下同）拾萬元，約定清償日為同年5月1日，此有雙方LINE對話紀錄可證（詳參原證1）。\n二、原告遂於113年2月5日將現金拾萬元交付予被告收訖。（原告可提出113年2月提款紀錄佐證資金流動，詳參原證2）\n三、詎料清償期屆至後，被告竟未依約返還借款，經原告於同年6月1日以通訊軟體催告（詳參原證1），被告均相應不理，顯已違約。\n四、爰依民法第478條、第229條第1項、第233條第1項等相關規定提起本訴，狀請 鈞院鑒核，賜判如訴之聲明，以維權益。\n\n　　證據\n原證1：LINE對話紀錄截圖乙份。\n原證2：原告113年2月提款紀錄影本乙份。\n\n謹　狀\n臺灣臺北地方法院民事庭　公鑒\n\n中華民國 ${new Date().getFullYear() - 1911} 年 ${new Date().getMonth() + 1} 月 ${new Date().getDate()} 日\n\n具狀人　林大明 （簽名或蓋章）\n` }; const finalOutput = processLegalDocumentText(testResponse); saveDocumentToLocalStorage(finalOutput); documentContent.textContent = finalOutput; modal.style.display = 'block'; log('本機測試書狀已生成並顯示', 'test'); showNotification('本機測試書狀已生成！', 'success'); setupButtons(); }, 1500); }
-            function resetForm() { if (confirm('您確定要清除所有已填寫的欄位嗎？')) { log('執行表單重置', 'ui'); form.reset(); clearErrors(); handleCaseTypeChange(); updateAiButtonState(); resetAiSearchUI(); /* Also reset AI Search UI */ showNotification('表單欄位已清除', 'info'); } }
+            function resetForm() { if (confirm('您確定要清除所有已填寫的欄位嗎？')) { log('執行表單重置', 'ui'); form.reset(); clearErrors(); handleCaseTypeChange(); updateAiButtonState(); resetAiSearchUI(); showNotification('表單欄位已清除', 'info'); } }
 
             // --- AI Summarize Button Logic ---
             function updateAiButtonState() { if (!caseProcessTextarea || !aiSummarizeButtonContainer) return; const processValue = caseProcessTextarea.value.trim(); aiSummarizeButtonContainer.innerHTML = ''; if (processValue) { const aiButton = createButton('aiSummarizeBtn', 'AI 統整', 'wand-magic-sparkles', 'btn-accent', triggerAiSummarize, false, false); aiSummarizeButtonContainer.appendChild(aiButton); } }
@@ -1281,12 +1273,14 @@
             // --- Helper Function to Populate Fields from AI JSON ---
             function populateFieldsFromAI(aiData) {
                 log("正在使用 AI 數據填充表單欄位", "ui");
-                const requestsTextarea = document.getElementById('requests'); const factsTextarea = document.getElementById('facts'); const lawsTextarea = document.getElementById('laws');
+                const requestsTextarea = document.getElementById('requests');
+                const factsTextarea = document.getElementById('facts');
+                const lawsTextarea = document.getElementById('laws');
                 const formatList = (items, prefixType = 'number') => { if (!Array.isArray(items) || items.length === 0) return ''; let hasPrefix = false; if (items.length > 1) { const prefixRegex = /^[a-z\d一二三四五六七八九十]+[、\.\)]\s*/i; const firstPrefix = String(items[0]).match(prefixRegex); if (firstPrefix) { hasPrefix = items.every(item => String(item).startsWith(firstPrefix[0].substring(0, 1))); } } return items.map((item, index) => { let currentItem = String(item).trim(); currentItem = currentItem.replace(/^[\d一二三四五六七八九十]+[、\.\)]\s*/, "").replace(/^[a-z][\.\)]\s*/i, "").replace(/^[-•*]\s*/, "").trim(); let prefix = ''; if (prefixType === 'number') { const chineseNumerals = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']; prefix = (index < chineseNumerals.length ? chineseNumerals[index] : (index + 1)) + '、'; } else if (prefixType === 'bullet') { prefix = '● '; } else { prefix = `${index + 1}. `; } return currentItem ? prefix + currentItem : ''; }).filter(item => item !== '').join('\n'); };
                 if (requestsTextarea && aiData.claims) { requestsTextarea.value = formatList(aiData.claims, 'number'); log(`填充 '請求事項' ${aiData.claims.length} 項`, "ui"); } else if (requestsTextarea) { requestsTextarea.value = ''; log(`未收到 AI claims 數據，清空 '請求事項'`, "ui"); }
                 if (factsTextarea && aiData.facts) { factsTextarea.value = formatList(aiData.facts, 'number'); log(`填充 '事實及理由' ${aiData.facts.length} 項`, "ui"); } else if (factsTextarea) { factsTextarea.value = ''; log(`未收到 AI facts 數據，清空 '事實及理由'`, "ui"); }
                 if (lawsTextarea && aiData.laws) { lawsTextarea.value = formatList(aiData.laws, 'bullet'); log(`填充 '適用法條' ${aiData.laws.length} 項`, "ui"); } else if (lawsTextarea) { lawsTextarea.value = ''; log(`未收到 AI laws 數據，清空 '適用法條'`, "ui"); }
-                resetAiSearchUI(); // If laws change, reset the keywords state
+                resetAiSearchUI();
             }
 
             // --- AI Summarize Function ---
@@ -1296,7 +1290,6 @@
                 const caseTitleText = caseTitleInput ? caseTitleInput.value.trim() : ''; if (!caseTitleText) { showNotification('請填寫「案件案由」欄位', 'warning'); showError('caseTitle', 'AI 統整需要案件案由'); caseTitleInput?.focus(); return; }
                 const processText = caseProcessTextarea.value.trim(); if (!processText) { showNotification('請先在「案件詳細經過」欄位填寫內容', 'warning'); caseProcessTextarea.focus(); return; }
                 clearErrors();
-
                 const aiButton = document.getElementById('aiSummarizeBtn'); let originalButtonHTML = ''; if (aiButton) { originalButtonHTML = aiButton.innerHTML; aiButton.disabled = true; aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 統整中...'; }
                 log('觸發 AI 統整，發送 類型+案由+經過 到 n8n...', 'request'); showNotification('正在請求 AI 統整，請稍候...', 'info');
                 try {
@@ -1314,88 +1307,13 @@
             }
 
             // --- AI Search - Keyword Handling Functions ---
-            function displayKeywords(keywords) {
-                if (!keywordListDiv || !aiKeywordsContainer) return;
-                keywordListDiv.innerHTML = ''; // Clear existing
-                keywords.forEach(kw => {
-                    const tag = document.createElement('span');
-                    tag.className = 'keyword-tag';
-                    tag.textContent = kw;
-                    tag.dataset.keyword = kw; // Store keyword in data attribute
+            function displayKeywords(keywords) { if (!keywordListDiv || !aiKeywordsContainer) return; keywordListDiv.innerHTML = ''; keywords.forEach(kw => { const tag = document.createElement('span'); tag.className = 'keyword-tag'; tag.textContent = kw; tag.dataset.keyword = kw; const deleteBtn = document.createElement('button'); deleteBtn.className = 'keyword-delete'; deleteBtn.innerHTML = '×'; deleteBtn.title = '移除此關鍵字'; deleteBtn.addEventListener('click', deleteKeywordHandler); tag.appendChild(deleteBtn); keywordListDiv.appendChild(tag); }); aiKeywordsContainer.style.display = 'block'; log(`顯示 ${keywords.length} 個關鍵字`, 'ui'); }
+            function addKeywordHandler() { if (!addKeywordInput || !keywordListDiv) return; const newKeyword = addKeywordInput.value.trim(); if (newKeyword) { const existingKeywords = getCurrentKeywords(); if (!existingKeywords.includes(newKeyword)) { const tag = document.createElement('span'); tag.className = 'keyword-tag'; tag.textContent = newKeyword; tag.dataset.keyword = newKeyword; const deleteBtn = document.createElement('button'); deleteBtn.className = 'keyword-delete'; deleteBtn.innerHTML = '×'; deleteBtn.title = '移除此關鍵字'; deleteBtn.addEventListener('click', deleteKeywordHandler); tag.appendChild(deleteBtn); keywordListDiv.appendChild(tag); addKeywordInput.value = ''; log(`新增關鍵字: ${newKeyword}`, 'ui'); } else { showNotification(`關鍵字 "${newKeyword}" 已存在`, 'warning'); } } addKeywordInput.focus(); }
+            function deleteKeywordHandler(event) { const tag = event.target.closest('.keyword-tag'); if (tag) { const keyword = tag.dataset.keyword; tag.remove(); log(`移除關鍵字: ${keyword}`, 'ui'); } }
+            function getCurrentKeywords() { if (!keywordListDiv) return []; const tags = keywordListDiv.querySelectorAll('.keyword-tag'); return Array.from(tags).map(tag => tag.dataset.keyword); }
+            function resetAiSearchUI() { const aiButton = document.getElementById('aiSearchBtn'); if (aiButton) { aiButton.innerHTML = '<i class="fas fa-search"></i> AI 搜尋'; aiButton.disabled = false; } if (aiKeywordsContainer) { aiKeywordsContainer.style.display = 'none'; } if (keywordListDiv) keywordListDiv.innerHTML = ''; if (addKeywordInput) addKeywordInput.value = ''; aiSearchState = 'initial'; log('AI 搜尋 UI 已重設', 'ui'); }
 
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'keyword-delete';
-                    deleteBtn.innerHTML = '×'; // 'x' symbol
-                    deleteBtn.title = '移除此關鍵字';
-                    deleteBtn.addEventListener('click', deleteKeywordHandler);
-
-                    tag.appendChild(deleteBtn);
-                    keywordListDiv.appendChild(tag);
-                });
-                aiKeywordsContainer.style.display = 'block'; // Show the container
-                log(`顯示 ${keywords.length} 個關鍵字`, 'ui');
-            }
-
-            function addKeywordHandler() {
-                if (!addKeywordInput || !keywordListDiv) return;
-                const newKeyword = addKeywordInput.value.trim();
-                if (newKeyword) {
-                    // Check for duplicates
-                    const existingKeywords = getCurrentKeywords();
-                    if (!existingKeywords.includes(newKeyword)) {
-                        const tag = document.createElement('span');
-                        tag.className = 'keyword-tag';
-                        tag.textContent = newKeyword;
-                        tag.dataset.keyword = newKeyword;
-
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.className = 'keyword-delete';
-                        deleteBtn.innerHTML = '×';
-                        deleteBtn.title = '移除此關鍵字';
-                        deleteBtn.addEventListener('click', deleteKeywordHandler);
-
-                        tag.appendChild(deleteBtn);
-                        keywordListDiv.appendChild(tag);
-                        addKeywordInput.value = ''; // Clear input
-                        log(`新增關鍵字: ${newKeyword}`, 'ui');
-                    } else {
-                        showNotification(`關鍵字 "${newKeyword}" 已存在`, 'warning');
-                    }
-                }
-                addKeywordInput.focus();
-            }
-
-            function deleteKeywordHandler(event) {
-                const tag = event.target.closest('.keyword-tag');
-                if (tag) {
-                    const keyword = tag.dataset.keyword;
-                    tag.remove();
-                    log(`移除關鍵字: ${keyword}`, 'ui');
-                }
-            }
-
-            function getCurrentKeywords() {
-                if (!keywordListDiv) return [];
-                const tags = keywordListDiv.querySelectorAll('.keyword-tag');
-                return Array.from(tags).map(tag => tag.dataset.keyword);
-            }
-
-            function resetAiSearchUI() {
-                const aiButton = document.getElementById('aiSearchBtn');
-                if (aiButton) {
-                    aiButton.innerHTML = '<i class="fas fa-search"></i> AI 搜尋';
-                    aiButton.disabled = false;
-                }
-                if (aiKeywordsContainer) {
-                    aiKeywordsContainer.style.display = 'none';
-                }
-                if (keywordListDiv) keywordListDiv.innerHTML = '';
-                if (addKeywordInput) addKeywordInput.value = '';
-                aiSearchState = 'initial';
-                log('AI 搜尋 UI 已重設', 'ui');
-            }
-
-            // --- AI Search Function (Modified for two steps) ---
+            // --- AI Search Function (Modified for two steps and laws output) ---
             async function triggerAiSearch() {
                 clearErrors();
                 const aiButton = document.getElementById('aiSearchBtn');
@@ -1403,166 +1321,92 @@
 
                 // --- Step 1: Generate Keywords ---
                 if (aiSearchState === 'initial') {
-                    // ... (Step 1 code remains the same) ...
                     log('AI 搜尋 - 步驟 1: 生成關鍵字', 'ui');
                     const caseTitleText = caseTitleInput?.value.trim();
-                    const lawsValue = lawsTextarea?.value.trim(); // Get Applicable Laws text
-
-                    if (!caseTitleText) {
-                        showNotification('請先填寫「案件案由」以產生搜尋關鍵字', 'warning');
-                        showError('caseTitle', '請填寫案件案由');
-                        caseTitleInput?.focus();
-                        return;
-                    }
-
-                    // Extract Keywords
+                    const lawsValue = lawsTextarea?.value.trim();
+                    if (!caseTitleText) { showNotification('請先填寫「案件案由」以產生搜尋關鍵字', 'warning'); showError('caseTitle', '請填寫案件案由'); caseTitleInput?.focus(); return; }
                     let keywords = [];
-                    // From Title: split by common separators, trim, filter empty
-                    if (caseTitleText) {
-                         keywords = keywords.concat(
-                             caseTitleText.split(/[\s,、，；;]+/)
-                                          .map(kw => kw.trim())
-                                          .filter(kw => kw.length > 0)
-                         );
-                    }
-
-                    // From Laws: Extract specific law patterns (e.g., 民法第xx條)
-                    if (lawsValue) {
-                        const lawPattern = /^[\s•●-]*([\u4e00-\u9fa5]+法\s?第\s?\d+\s?條)/;
-                        lawsValue.split('\n').forEach(line => {
-                            const match = line.trim().match(lawPattern);
-                            if (match && match[1]) {
-                                keywords.push(match[1].replace(/\s/g, ''));
-                            }
-                        });
-                        log(`從適用法條提取到符合格式的關鍵字 ${keywords.length - (caseTitleText ? caseTitleText.split(/[\s,、，；;]+/).map(kw => kw.trim()).filter(kw => kw.length > 0).length : 0)} 個`, 'debug');
-                    }
-
-
-                    // Unique keywords
+                    if (caseTitleText) { keywords = keywords.concat(caseTitleText.split(/[\s,、，；;]+/).map(kw => kw.trim()).filter(kw => kw.length > 0)); }
+                    if (lawsValue) { const lawPattern = /^[\s•●-]*([\u4e00-\u9fa5]+法\s?第\s?\d+\s?條)/; lawsValue.split('\n').forEach(line => { const match = line.trim().match(lawPattern); if (match && match[1]) { keywords.push(match[1].replace(/\s/g, '')); } }); log(`從適用法條提取到符合格式的關鍵字 ${keywords.length - (caseTitleText ? caseTitleText.split(/[\s,、，；;]+/).map(kw => kw.trim()).filter(kw => kw.length > 0).length : 0)} 個`, 'debug'); }
                     keywords = [...new Set(keywords)];
-
-                    if (keywords.length === 0) {
-                         showNotification('未能從「案件案由」或「適用法條」提取有效關鍵字', 'warning');
-                         return;
-                    }
-
+                    if (keywords.length === 0) { showNotification('未能從「案件案由」或「適用法條」提取有效關鍵字', 'warning'); return; }
                     displayKeywords(keywords);
-
-                    // Change button state
                     aiButton.innerHTML = '<i class="fas fa-paper-plane"></i> 送出搜尋';
                     aiSearchState = 'keywords_ready';
                     log('AI 搜尋進入 "keywords_ready" 狀態', 'ui');
-
-
                 }
                 // --- Step 2: Send Keywords to Webhook ---
                 else if (aiSearchState === 'keywords_ready') {
                     log('AI 搜尋 - 步驟 2: 送出關鍵字進行搜尋', 'request');
-                    const currentKeywords = getCurrentKeywords(); // Get keywords as an array
+                    const currentKeywords = getCurrentKeywords();
                     const factsText = factsTextarea?.value.trim();
-
-                    if (currentKeywords.length === 0) {
-                        showNotification('請至少保留或新增一個搜尋關鍵字', 'warning');
-                        addKeywordInput?.focus();
-                        return;
-                    }
-
-                    // *** MODIFIED PART START ***
-                    // Join keywords with '&' into a single string
-                    const keywordsString = currentKeywords.join('&');
-                    log(`組合後的關鍵字字串: ${keywordsString}`, 'debug');
-                    // *** MODIFIED PART END ***
-
-
+                    if (currentKeywords.length === 0) { showNotification('請至少保留或新增一個搜尋關鍵字', 'warning'); addKeywordInput?.focus(); return; }
+                    const keywordsString = currentKeywords.join('&'); log(`組合後的關鍵字字串: ${keywordsString}`, 'debug');
                     let originalButtonHTML = aiButton.innerHTML;
                     aiButton.disabled = true;
                     aiButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 搜尋中...';
-                    showNotification('正在請求 AI 搜尋相關判決...', 'info');
+                    showNotification('正在請求 AI 搜尋相關法條/判決...', 'info'); // Modified notification
 
                     try {
-                        // *** MODIFIED PART START ***
-                        // Construct payload using the keywordsString
-                        const payload = {
-                            action: 'search_precedents_keywords', // Or keep your previous action name
-                            keywords: keywordsString,            // Send the joined string
-                            factsSummary: factsText ? factsText.substring(0, 800) : null
-                        };
-                        // *** MODIFIED PART END ***
-
-                        log('發送到 AI Search Webhook 的 Payload (Keywords String):', 'debug');
-                        if (DEBUG_MODE) console.log("AI Search Payload:", JSON.stringify(payload, null, 2));
-
-                        const response = await fetch(aiSearchWebhookUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-User-Id': window.debugInfo.user || 'unknown',
-                                'X-Action': 'search-precedents-keywords' // Match your n8n workflow expectation if needed
-                            },
-                            body: JSON.stringify(payload)
-                        });
+                        const payload = { action: 'search_precedents_keywords', keywords: keywordsString, factsSummary: factsText ? factsText.substring(0, 800) : null };
+                        log('發送到 AI Search Webhook 的 Payload (Keywords String):', 'debug'); if (DEBUG_MODE) console.log("AI Search Payload:", JSON.stringify(payload, null, 2));
+                        const response = await fetch(aiSearchWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': window.debugInfo.user || 'unknown', 'X-Action': 'search-precedents-keywords' }, body: JSON.stringify(payload) });
                         log(`AI 搜尋回應狀態: ${response.status}`, 'response');
-
-                        if (!response.ok) {
-                           // ... (Error handling remains the same) ...
-                           let errorBody = await response.text();
-                            log(`AI 搜尋伺服器錯誤回應內容: ${errorBody}`, 'error');
-                            let errorMessage = `AI 搜尋伺服器錯誤: ${response.status} ${response.statusText}.`;
-                            try {
-                                const errorJson = JSON.parse(errorBody);
-                                errorMessage += ` ${errorJson.message || ''}`;
-                            } catch (e) {
-                                errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`;
-                            }
-                            throw new Error(errorMessage);
-                        }
-
+                        if (!response.ok) { let errorBody = await response.text(); log(`AI 搜尋伺服器錯誤回應內容: ${errorBody}`, 'error'); let errorMessage = `AI 搜尋伺服器錯誤: ${response.status} ${response.statusText}.`; try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; } catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; } throw new Error(errorMessage); }
                         const result = await response.json();
-                        log('收到 AI 搜尋結果', 'response');
-                        if (DEBUG_MODE) console.log('AI Search Result (Raw):', JSON.stringify(result, null, 2));
+                        log('收到 AI 搜尋結果', 'response'); if (DEBUG_MODE) console.log('AI Search Result (Raw):', JSON.stringify(result, null, 2));
 
-                        // ... (Processing search results remains the same) ...
-                         let foundPrecedents = [];
-                        if (Array.isArray(result) && result.length > 0 && result[0].precedents && Array.isArray(result[0].precedents)) {
-                            foundPrecedents = result[0].precedents;
-                            log(`從回應陣列提取 ${foundPrecedents.length} 筆判決`, 'process');
-                        } else if (typeof result === 'object' && result !== null && result.precedents && Array.isArray(result.precedents)) {
-                            foundPrecedents = result.precedents;
-                            log(`從回應物件提取 ${foundPrecedents.length} 筆判決`, 'process');
+                        // --- MODIFICATION: Process result and put into 'laws' textarea ---
+                        let responseContentForLaws = [];
+                        const lawsFieldKey = 'applicableLaws'; // Ideal key name in response
+                        const precedentFieldKey = 'precedents'; // Current key name in response (fallback)
+
+                        // Try to find a specific key for laws first
+                        if (Array.isArray(result) && result.length > 0 && result[0][lawsFieldKey] && Array.isArray(result[0][lawsFieldKey])) {
+                            responseContentForLaws = result[0][lawsFieldKey];
+                            log(`從回應陣列提取 ${responseContentForLaws.length} 筆適用法條 (${lawsFieldKey})`, 'process');
+                        } else if (typeof result === 'object' && result !== null && result[lawsFieldKey] && Array.isArray(result[lawsFieldKey])) {
+                            responseContentForLaws = result[lawsFieldKey];
+                            log(`從回應物件提取 ${responseContentForLaws.length} 筆適用法條 (${lawsFieldKey})`, 'process');
+                        }
+                        // Fallback: Use 'precedents' if 'applicableLaws' not found
+                        else if (Array.isArray(result) && result.length > 0 && result[0][precedentFieldKey] && Array.isArray(result[0][precedentFieldKey])) {
+                            responseContentForLaws = result[0][precedentFieldKey];
+                            log(`未找到 '${lawsFieldKey}'，從回應陣列提取 ${responseContentForLaws.length} 筆判決 (${precedentFieldKey}) 作為法條內容`, 'process');
+                        } else if (typeof result === 'object' && result !== null && result[precedentFieldKey] && Array.isArray(result[precedentFieldKey])) {
+                            responseContentForLaws = result[precedentFieldKey];
+                            log(`未找到 '${lawsFieldKey}'，從回應物件提取 ${responseContentForLaws.length} 筆判決 (${precedentFieldKey}) 作為法條內容`, 'process');
                         } else {
-                            log(`AI 搜尋回應格式非預期或未找到判決資料`, 'warning');
+                            log(`AI 搜尋回應格式非預期或未找到判決/法條資料`, 'warning');
                         }
 
-                        if (precedentsTextarea) {
-                            if (foundPrecedents.length > 0) {
-                                const newText = foundPrecedents.join('\n');
-                                const currentVal = precedentsTextarea.value.trim();
-                                precedentsTextarea.value = currentVal ? (currentVal + "\n---\n" + newText) : newText;
-                                showNotification(`AI 找到 ${foundPrecedents.length} 筆相關判決參考 (已附加)`, 'success');
-                                log(`已將 ${foundPrecedents.length} 筆判決附加至欄位`, 'ui');
-                                precedentsTextarea.focus();
-                                precedentsTextarea.scrollTop = precedentsTextarea.scrollHeight;
+                        // Target the 'laws' textarea
+                        if (lawsTextarea) {
+                            if (responseContentForLaws.length > 0) {
+                                const newText = responseContentForLaws.join('\n');
+                                lawsTextarea.value = newText; // Replace content
+                                showNotification(`AI 搜尋結果已填入「適用法條」欄位 (${responseContentForLaws.length} 項)`, 'success');
+                                log(`已將 ${responseContentForLaws.length} 筆結果填入「適用法條」欄位`, 'ui');
+                                lawsTextarea.focus();
+                                lawsTextarea.scrollTop = lawsTextarea.scrollHeight;
                             } else {
-                                showNotification('AI 未找到符合關鍵字的相關判決', 'info');
+                                showNotification('AI 未找到相關法條或判決結果', 'info');
+                                // Optionally clear the field:
+                                // lawsTextarea.value = '';
                             }
                         } else {
-                            log('無法找到 "相關判決" 的 textarea 元素', 'error');
-                            showNotification('無法將結果填入欄位 (內部錯誤)', 'error');
+                            log('無法找到 "適用法條" (laws) 的 textarea 元素', 'error');
+                            showNotification('無法將結果填入法條欄位 (內部錯誤)', 'error');
                         }
+                        // --- END MODIFICATION ---
 
                     } catch (error) {
-                        // ... (Error handling remains the same) ...
-                        console.error('AI Search Fetch Error:', error);
-                        log(`AI 搜尋請求失敗: ${error.message}`, 'error');
-                        showNotification(`AI 搜尋失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
+                        console.error('AI Search Fetch Error:', error); log(`AI 搜尋請求失敗: ${error.message}`, 'error'); showNotification(`AI 搜尋失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
                     } finally {
-                        // Reset UI regardless of success/failure
                         resetAiSearchUI();
                     }
                 }
             }
-
 
             // --- Main Form Submission Handler ---
             function handleFormSubmit(e) {
@@ -1589,79 +1433,20 @@
 
             // --- Initialization ---
             log(`系統初始化 - v${window.debugInfo.version}`, 'init');
-            setupButtons(); // Setup main form buttons
-
-            // Create and add AI Search Button on load
-            if (aiSearchButtonContainer) {
-                // Pass the modified triggerAiSearch function
-                const aiSearchButton = createButton('aiSearchBtn', 'AI 搜尋', 'search', 'btn-accent', triggerAiSearch, false, false);
-                aiSearchButtonContainer.appendChild(aiSearchButton);
-                log('AI 搜尋按鈕已添加', 'init');
-            } else {
-                log('未找到 AI 搜尋按鈕容器 (aiSearchButtonContainer)', 'warning');
-            }
-
-            // Add Event Listener for Add Keyword Button
-            if (addKeywordBtn) {
-                addKeywordBtn.addEventListener('click', addKeywordHandler);
-            }
-            // Add Event Listener for Enter key in Add Keyword Input
-            if (addKeywordInput) {
-                addKeywordInput.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault(); // Prevent form submission if inside a form
-                        addKeywordHandler();
-                    }
-                });
-            }
-
-            // Add Event Listener for Case Type Change
-            if (caseTypeSelect) {
-                caseTypeSelect.addEventListener('change', handleCaseTypeChange);
-                handleCaseTypeChange(); // Initial check
-            }
-
-            // Add Event Listener for AI Summarize button visibility
-            if (caseProcessTextarea) {
-                caseProcessTextarea.addEventListener('input', updateAiButtonState);
-                updateAiButtonState(); // Initial check
-            } else { log('未找到案件經過欄位 (caseProcess textarea)', 'warning'); }
-
-            // Reset AI Search if title or laws change
-            if (caseTitleInput) {
-                caseTitleInput.addEventListener('input', resetAiSearchUI);
-            }
-            if (lawsTextarea) {
-                lawsTextarea.addEventListener('input', resetAiSearchUI);
-            }
-
-            // Debug Panel Toggle
+            setupButtons();
+            if (aiSearchButtonContainer) { const aiSearchButton = createButton('aiSearchBtn', 'AI 搜尋', 'search', 'btn-accent', triggerAiSearch, false, false); aiSearchButtonContainer.appendChild(aiSearchButton); log('AI 搜尋按鈕已添加', 'init'); } else { log('未找到 AI 搜尋按鈕容器 (aiSearchButtonContainer)', 'warning'); }
+            if (addKeywordBtn) { addKeywordBtn.addEventListener('click', addKeywordHandler); }
+            if (addKeywordInput) { addKeywordInput.addEventListener('keypress', function (e) { if (e.key === 'Enter') { e.preventDefault(); addKeywordHandler(); } }); }
+            if (caseTypeSelect) { caseTypeSelect.addEventListener('change', handleCaseTypeChange); handleCaseTypeChange(); }
+            if (caseProcessTextarea) { caseProcessTextarea.addEventListener('input', updateAiButtonState); updateAiButtonState(); } else { log('未找到案件經過欄位 (caseProcess textarea)', 'warning'); }
+            if (caseTitleInput) { caseTitleInput.addEventListener('input', resetAiSearchUI); }
+            if (lawsTextarea) { lawsTextarea.addEventListener('input', resetAiSearchUI); }
             document.addEventListener('keydown', (e) => { if (e.altKey && e.key === 'd') { debugPanel.classList.toggle('active'); log(`調試面板 ${debugPanel.classList.contains('active') ? '開啟' : '關閉'}`, 'ui'); e.preventDefault(); } });
             showNotification('按下 Alt+D 可顯示/隱藏調試面板', 'info', 7000);
-
+            resetAiSearchUI();
 
             // --- Function to handle case type dropdown change ---
-            function handleCaseTypeChange() {
-                if (!caseTypeSelect || !caseTypeCustomInput) return;
-                const customError = document.getElementById('caseTypeCustom-error');
-                const selectError = document.getElementById('caseType-error');
-                if (caseTypeSelect.value === 'custom') {
-                    caseTypeCustomInput.style.display = 'block';
-                    selectError.style.display = 'none';
-                    caseTypeSelect.classList.remove('error');
-                } else {
-                    caseTypeCustomInput.style.display = 'none';
-                    caseTypeCustomInput.value = '';
-                    customError.style.display = 'none';
-                    caseTypeCustomInput.classList.remove('error');
-                    if (caseTypeSelect.value !== '') {
-                        selectError.style.display = 'none';
-                        caseTypeSelect.classList.remove('error');
-                    }
-                }
-            }
-            // Initial UI setup
-            resetAiSearchUI();
+            function handleCaseTypeChange() { if (!caseTypeSelect || !caseTypeCustomInput) return; const customError = document.getElementById('caseTypeCustom-error'); const selectError = document.getElementById('caseType-error'); if (caseTypeSelect.value === 'custom') { caseTypeCustomInput.style.display = 'block'; selectError.style.display = 'none'; caseTypeSelect.classList.remove('error'); } else { caseTypeCustomInput.style.display = 'none'; caseTypeCustomInput.value = ''; customError.style.display = 'none'; caseTypeCustomInput.classList.remove('error'); if (caseTypeSelect.value !== '') { selectError.style.display = 'none'; caseTypeSelect.classList.remove('error'); } } }
 
         }); // End DOMContentLoaded
     </script>
