@@ -1544,9 +1544,14 @@
                         if (searchResultsListContainer) {
                             searchResultsListContainer.innerHTML = ''; // Clear again just in case
 
-                            if (Array.isArray(result) && result.length > 0) {
-                                log(`收到 ${result.length} 筆判決結果，準備顯示列表`, 'process');
-                                result.forEach(item => {
+                            // ***** CORRECTED CONDITION *****
+                            // Check if result is an object, has 'data', 'data' is an array, and it's not empty
+                            if (typeof result === 'object' && result !== null && Array.isArray(result.data) && result.data.length > 0) {
+                                // ***** CORRECTED LOG AND NOTIFICATION *****
+                                log(`收到 ${result.data.length} 筆判決結果，準備顯示列表`, 'process');
+                                // ***** CORRECTED LOOP *****
+                                result.data.forEach(item => {
+                                    // Check if item has the required properties
                                     if (item && typeof item.id === 'string' && typeof item.url === 'string') {
                                         const itemDiv = document.createElement('div');
                                         itemDiv.className = 'search-result-item';
@@ -1576,10 +1581,10 @@
                                     }
                                 });
                                 searchResultsListContainer.style.display = 'block'; // Show the container
-                                showNotification(`找到 ${result.length} 筆相關判決，請選擇加入`, 'success');
+                                showNotification(`找到 ${result.data.length} 筆相關判決，請選擇加入`, 'success'); // Use result.data.length
                             } else {
-                                // No results or not an array
-                                log('AI 未找到相關判決結果或回傳格式非預期陣列', 'ui');
+                                // This block now correctly handles cases where 'data' is missing, not an array, or empty
+                                log('AI 未找到相關判決結果或回傳格式非預期 (Expected {data: [...]})', 'ui');
                                 const noResultsMsg = document.createElement('p');
                                 noResultsMsg.className = 'no-results-message';
                                 noResultsMsg.textContent = '未找到相關判決結果。';
