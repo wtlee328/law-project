@@ -1352,59 +1352,91 @@
                         log('發送到 AI Search Webhook 的 Payload (Keywords String):', 'debug'); if (DEBUG_MODE) console.log("AI Search Payload:", JSON.stringify(payload, null, 2));
                         const response = await fetch(aiSearchWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': window.debugInfo.user || 'unknown', 'X-Action': 'search-precedents-keywords' }, body: JSON.stringify(payload) });
                         log(`AI 搜尋回應狀態: ${response.status}`, 'response');
-                        if (!response.ok) { let errorBody = await response.text(); log(`AI 搜尋伺服器錯誤回應內容: ${errorBody}`, 'error'); let errorMessage = `AI 搜尋伺服器錯誤: ${response.status} ${response.statusText}.`; try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; } catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; } throw new Error(errorMessage); }
-                        const result = await response.json();
-                        log('收到 AI 搜尋結果', 'response'); if (DEBUG_MODE) console.log('AI Search Result (Raw):', JSON.stringify(result, null, 2));
+                        const contentType = response.headers.get("content-type");
+                        log(`收到的 Content-Type: ${contentType}`, 'debug');
+                        if (!contentType || !contentType.includes("application/json")) {
+                            log("警告：回應的 Content-Type 可能不是 application/json，response.json() 可能會失敗。", 'warning');
+                            // 嘗試讀取文本以查看原始內容
+                            const rawText = await response.text();
+                            log(`原始回應文本: ${rawText}`, 'debug');
+                            // 這裡可以選擇拋出錯誤或嘗試手動解析 rawText
+                            throw new Error("收到的不是 JSON 回應");
+                        }
+                        // ***** DEBUGGING END *****
 
-                        // --- MODIFICATION START: Process result and put into 'precedents' textarea ---
+
+                        if (!response.ok) {
+                            let errorBody = await response.text(); // 讀取錯誤文本
+                            log(`AI 搜尋伺服器錯誤回應內容: ${errorBody}`, 'error');
+                            let errorMessage = `AI 搜尋伺服器錯誤: ${response.status} ${response.statusText}.`;
+                            try { const errorJson = JSON.parse(errorBody); errorMessage += ` ${errorJson.message || ''}`; } catch (e) { errorMessage += ` ${errorBody.substring(0, 100)}${errorBody.length > 100 ? '...' : ''}`; }
+                            throw new Error(errorMessage);
+                        }
+
+                        // ***** 核心檢查點：解析 JSON *****
+                        const result = await response.json(); // 嘗試解析
+
+                        // ***** DEBUGGING START *****
+                        log('收到 AI 搜尋結果 (已解析)', 'response');
+                        log(`解析後 result 的類型: ${typeof result}`, 'debug');
+                        log(`result 是陣列嗎?: ${Array.isArray(result)}`, 'debug');
+                        if (DEBUG_MODE) {
+                            // 使用 JSON.stringify 仔細查看結構
+                            console.log('AI Search Result (Parsed):', JSON.stringify(result, null, 2));
+                        }
+                        // ***** DEBUGGING END *****
+
+
+                        // --- 處理結果並填入 'precedents' textarea ---
                         let caseStrings = [];
-                        // Check for the specific structure: [{"data": [...]}]
-                        if (Array.isArray(result) && result.length > 0 && result[0].data && Array.isArray(result[0].data)) {
-                             caseStrings = result[0].data.filter(item => typeof item === 'string'); // Ensure items are strings
-                             log(`從 n8n 回應提取到 ${caseStrings.length} 筆判決資料 (來自 data 陣列)`, 'process');
+
+                        // ***** 再次檢查這個條件 *****
+                        // 條件：result 是一個陣列，長度大於0，第一個元素 result[0] 存在，
+                        //       且 result[0] 有一個名為 'data' 的屬性，
+                        //       且 result[0].data 的值是一個陣列。
+                        if (Array.isArray(result) && result.length > 0 && result[0] && typeof result[0] === 'object' && result[0].data && Array.isArray(result[0].data)) {
+                            log(`條件判斷成功: 找到符合 [{\"data\": [...]}] 的結構`, 'process');
+                            caseStrings = result[0].data.filter(item => typeof item === 'string'); // 確保只取字串
+                            log(`從 data 陣列提取到 ${caseStrings.length} 筆判決資料`, 'process');
                         }
-                        // Add a fallback for other potential structures if needed, e.g., { "precedents": [...] }
-                        else if (typeof result === 'object' && result !== null && result.precedents && Array.isArray(result.precedents)) {
-                             caseStrings = result.precedents.filter(item => typeof item === 'string');
-                             log(`從 n8n 回應提取到 ${caseStrings.length} 筆判決資料 (來自 precedents 鍵)`, 'process');
-                        }
+                        // 可以添加其他 fallback 檢查 (如下面原本的例子)
+                        // else if (typeof result === 'object' && result !== null && result.precedents && Array.isArray(result.precedents)) { ... }
                         else {
-                             log(`AI 搜尋回應格式非預期或未找到判決資料 (期望 [{"data": [...]}] 或 {"precedents": [...]})`, 'warning');
-                             // You could attempt to parse other common structures here if necessary
-                             if (Array.isArray(result) && result.every(item => typeof item === 'string')) {
-                                caseStrings = result;
-                                log(`嘗試將回應陣列直接作為判決列表 (共 ${caseStrings.length} 筆)`, 'process');
-                             }
+                            // ***** 如果上面的條件判斷失敗，會執行到這裡 *****
+                            log(`結構判斷失敗: 回應的結構不符合預期的 [{\"data\": [...]}]。實際收到的 result 見上方日誌。`, 'warning');
+                            // 可以在這裡嘗試解析其他可能的結構，或者直接認定為找不到
                         }
 
                         // Target the 'precedents' textarea
                         if (precedentsTextarea) {
-                             if (caseStrings.length > 0) {
-                                 const formattedText = caseStrings.join('\n');
-                                 precedentsTextarea.value = formattedText; // Replace content
-                                 showNotification(`相關判決結果已填入「相關判決」欄位 (${caseStrings.length} 項)`, 'success');
-                                 log(`已將 ${caseStrings.length} 筆結果填入「相關判決」欄位`, 'ui');
-                                 precedentsTextarea.focus();
-                                 precedentsTextarea.scrollTop = precedentsTextarea.scrollHeight; // Scroll to show content
-                             } else {
-                                 showNotification('AI 未找到相關判決結果', 'info');
-                                 // Optionally clear the field:
-                                 // precedentsTextarea.value = '';
-                             }
-                         } else {
-                             log('無法找到 "相關判決" (precedents) 的 textarea 元素', 'error');
-                             showNotification('無法將結果填入判決欄位 (內部錯誤)', 'error');
-                         }
-                        // --- MODIFICATION END ---
+                            log(`準備填入判決欄位，找到 ${caseStrings.length} 筆資料`, 'ui'); // <-- 檢查這裡的數量
+                            if (caseStrings.length > 0) {
+                                const formattedText = caseStrings.join('\n');
+                                precedentsTextarea.value = formattedText;
+                                showNotification(`相關判決結果已填入「相關判決」欄位 (${caseStrings.length} 項)`, 'success');
+                                log(`已將 ${caseStrings.length} 筆結果填入「相關判決」欄位`, 'ui');
+                                precedentsTextarea.focus();
+                                precedentsTextarea.scrollTop = precedentsTextarea.scrollHeight;
+                            } else {
+                                // ***** 如果 caseStrings 是空的，會執行這裡 *****
+                                showNotification('AI 未找到相關判決結果', 'info');
+                                log('caseStrings 陣列為空，顯示 "未找到" 訊息', 'ui');
+                            }
+                        } else {
+                            log('無法找到 "相關判決" (precedents) 的 textarea 元素', 'error');
+                            showNotification('無法將結果填入判決欄位 (內部錯誤)', 'error');
+                        }
+                        // --- 處理結束 ---
 
                     } catch (error) {
-                        console.error('AI Search Fetch Error:', error); log(`AI 搜尋請求失敗: ${error.message}`, 'error'); showNotification(`AI 搜尋失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
+                        console.error('AI Search Fetch Error:', error);
+                        log(`AI 搜尋請求或處理失敗: ${error.message}`, 'error');
+                        showNotification(`AI 搜尋失敗：${error.message || '未知網路或伺服器錯誤'}`, 'error', 8000);
                     } finally {
-                        resetAiSearchUI(); // Always reset the UI regardless of success or failure
+                        resetAiSearchUI();
                     }
                 }
             }
-
 
             // --- Main Form Submission Handler ---
             function handleFormSubmit(e) {
