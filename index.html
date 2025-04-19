@@ -1394,17 +1394,14 @@
                         // 條件：result 是一個陣列，長度大於0，第一個元素 result[0] 存在，
                         //       且 result[0] 有一個名為 'data' 的屬性，
                         //       且 result[0].data 的值是一個陣列。
-                        if (Array.isArray(result) && result.length > 0 && result[0] && typeof result[0] === 'object' && result[0].data && Array.isArray(result[0].data)) {
-                            log(`條件判斷成功: 找到符合 [{\"data\": [...]}] 的結構`, 'process');
-                            caseStrings = result[0].data.filter(item => typeof item === 'string'); // 確保只取字串
+                        if (typeof result === 'object' && result !== null && result.data && Array.isArray(result.data)) {
+                            log(`條件判斷成功: 找到符合 {\"data\": [...]} 的結構`, 'process'); // 更新日誌訊息
+                            caseStrings = result.data.filter(item => typeof item === 'string'); // 直接從 result.data 提取
                             log(`從 data 陣列提取到 ${caseStrings.length} 筆判決資料`, 'process');
                         }
-                        // 可以添加其他 fallback 檢查 (如下面原本的例子)
-                        // else if (typeof result === 'object' && result !== null && result.precedents && Array.isArray(result.precedents)) { ... }
+                        // (保留 else 部分用於處理其他意外情況)
                         else {
-                            // ***** 如果上面的條件判斷失敗，會執行到這裡 *****
-                            log(`結構判斷失敗: 回應的結構不符合預期的 [{\"data\": [...]}]。實際收到的 result 見上方日誌。`, 'warning');
-                            // 可以在這裡嘗試解析其他可能的結構，或者直接認定為找不到
+                            log(`結構判斷失敗: 回應的結構不符合預期的 {\"data\": [...]}。實際收到的 result 見上方日誌。`, 'warning');
                         }
 
                         // Target the 'precedents' textarea
